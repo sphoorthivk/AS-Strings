@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 import { categoriesAPI } from '../../services/api';
 import { Category } from '../../types';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -80,7 +81,8 @@ const CategoryManagement: React.FC = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <AdminLayout>
+      <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Category Management</h1>
@@ -308,7 +310,7 @@ const CategoryManagement: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 };
 
