@@ -39,17 +39,17 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/women" className="text-gray-300 hover:text-purple-400 transition-colors">
+                <Link to="/products/women" className="text-gray-300 hover:text-purple-400 transition-colors">
                   Women's Fashion
                 </Link>
               </li>
               <li>
-                <Link to="/men" className="text-gray-300 hover:text-purple-400 transition-colors">
+                <Link to="/products/men" className="text-gray-300 hover:text-purple-400 transition-colors">
                   Men's Fashion
                 </Link>
               </li>
               <li>
-                <Link to="/categories" className="text-gray-300 hover:text-purple-400 transition-colors">
+                <Link to="/products" className="text-gray-300 hover:text-purple-400 transition-colors">
                   All Categories
                 </Link>
               </li>
