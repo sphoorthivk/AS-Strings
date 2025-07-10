@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Filter, Tag, Users, Package } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { categoriesAPI } from '../../services/api';
+import { categoriesAPI, productsAPI } from '../../services/api';
 import { Category } from '../../types';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
@@ -12,6 +12,7 @@ const CategoryManagement: React.FC = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [genderFilter, setGenderFilter] = useState('all');
+  const [categoryStats, setCategoryStats] = useState<{[key: string]: number}>({});
   const [formData, setFormData] = useState({
     name: '',
     gender: 'women' as 'men' | 'women' | 'unisex',
@@ -21,6 +22,7 @@ const CategoryManagement: React.FC = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchCategoryStats();
   }, [genderFilter]);
 
   const fetchCategories = async () => {
@@ -33,6 +35,23 @@ const CategoryManagement: React.FC = () => {
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategoryStats = async () => {
+    try {
+      // Fetch products to get category statistics
+      const response = await productsAPI.getProducts({ limit: 1000 });
+      const products = response.data.products;
+      
+      const stats: {[key: string]: number} = {};
+      products.forEach((product: any) => {
+        stats[product.category] = (stats[product.category] || 0) + 1;
+      });
+      
+      setCategoryStats(stats);
+    } catch (error) {
+      console.error('Error fetching category stats:', error);
     }
   };
 
@@ -49,6 +68,7 @@ const CategoryManagement: React.FC = () => {
       setEditingCategory(null);
       setFormData({ name: '', gender: 'women', description: '', isActive: true });
       fetchCategories();
+      fetchCategoryStats();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Error saving category');
     }
@@ -65,11 +85,19 @@ const CategoryManagement: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
+  const handleDelete = async (id: string, categoryName: string) => {
+    const productCount = categoryStats[categoryName] || 0;
+    
+    if (productCount > 0) {
+      alert(`Cannot delete category "${categoryName}" because it has ${productCount} products. Please move or delete the products first.`);
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete the category "${categoryName}"?`)) {
       try {
         await categoriesAPI.deleteCategory(id);
         fetchCategories();
+        fetchCategoryStats();
       } catch (error: any) {
         alert(error.response?.data?.message || 'Error deleting category');
       }
@@ -80,13 +108,18 @@ const CategoryManagement: React.FC = () => {
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalCategories = categories.length;
+  const activeCategories = categories.filter(c => c.isActive).length;
+  const womenCategories = categories.filter(c => c.gender === 'women').length;
+  const menCategories = categories.filter(c => c.gender === 'men').length;
+
   return (
     <AdminLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Category Management</h1>
-            <p className="text-gray-600 mt-2">Manage product categories for men and women</p>
+            <p className="text-gray-600 mt-2">Organize your products with well-structured categories</p>
           </div>
           <button
             onClick={() => {
@@ -99,6 +132,57 @@ const CategoryManagement: React.FC = () => {
             <Plus size={20} />
             <span>Add Category</span>
           </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Categories</p>
+                <p className="text-2xl font-bold text-gray-900">{totalCategories}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Tag size={24} className="text-blue-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Categories</p>
+                <p className="text-2xl font-bold text-gray-900">{activeCategories}</p>
+              </div>
+              <div className="p-3 bg-green-50 rounded-lg">
+                <Package size={24} className="text-green-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Women Categories</p>
+                <p className="text-2xl font-bold text-gray-900">{womenCategories}</p>
+              </div>
+              <div className="p-3 bg-pink-50 rounded-lg">
+                <Users size={24} className="text-pink-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Men Categories</p>
+                <p className="text-2xl font-bold text-gray-900">{menCategories}</p>
+              </div>
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <Users size={24} className="text-blue-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
@@ -153,6 +237,9 @@ const CategoryManagement: React.FC = () => {
                       Description
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Products
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -167,7 +254,12 @@ const CategoryManagement: React.FC = () => {
                   {filteredCategories.map((category) => (
                     <tr key={category._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                            <Tag size={20} className="text-white" />
+                          </div>
+                          <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -181,8 +273,22 @@ const CategoryManagement: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {category.description || 'No description'}
+                        <div className="text-sm text-gray-900 max-w-xs">
+                          {category.description ? (
+                            <span className="truncate block" title={category.description}>
+                              {category.description}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">No description</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Package size={16} className="text-gray-400 mr-2" />
+                          <span className="text-sm font-medium text-gray-900">
+                            {categoryStats[category.name] || 0}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -206,7 +312,7 @@ const CategoryManagement: React.FC = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(category._id)}
+                            onClick={() => handleDelete(category._id, category.name)}
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-100 transition-colors"
                           >
                             <Trash2 size={16} />
@@ -221,13 +327,15 @@ const CategoryManagement: React.FC = () => {
             
             {filteredCategories.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500">No categories found</p>
+                <Tag size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 text-lg">No categories found</p>
+                <p className="text-gray-400 text-sm">Create your first category to organize your products</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Modal */}
+        {/* Category Form Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
@@ -238,7 +346,7 @@ const CategoryManagement: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category Name
+                    Category Name *
                   </label>
                   <input
                     type="text"
@@ -246,13 +354,16 @@ const CategoryManagement: React.FC = () => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                    placeholder="Enter category name"
+                    placeholder="e.g., Dresses, T-Shirts, Shoes"
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose a clear, descriptive name for your category
+                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gender
+                    Target Gender *
                   </label>
                   <select
                     value={formData.gender}
@@ -267,14 +378,14 @@ const CategoryManagement: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description (Optional)
+                    Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
                     rows={3}
-                    placeholder="Enter category description"
+                    placeholder="Describe what products belong in this category..."
                   />
                 </div>
 
@@ -287,7 +398,7 @@ const CategoryManagement: React.FC = () => {
                     className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
                   <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-                    Active
+                    Active (visible to customers)
                   </label>
                 </div>
 
@@ -303,7 +414,7 @@ const CategoryManagement: React.FC = () => {
                     type="submit"
                     className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
                   >
-                    {editingCategory ? 'Update' : 'Create'}
+                    {editingCategory ? 'Update Category' : 'Create Category'}
                   </button>
                 </div>
               </form>

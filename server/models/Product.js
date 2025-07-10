@@ -19,6 +19,29 @@ const productSchema = new mongoose.Schema({
     type: Number,
     min: 0
   },
+  shippingCost: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  weight: {
+    type: Number,
+    min: 0
+  },
+  dimensions: {
+    length: Number,
+    width: Number,
+    height: Number
+  },
+  sku: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  tags: [{
+    type: String,
+    trim: true
+  }],
   images: [{
     type: String,
     required: true
@@ -80,6 +103,14 @@ const productSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Generate SKU if not provided
+productSchema.pre('save', function(next) {
+  if (!this.sku) {
+    this.sku = `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+  next();
 });
 
 // Calculate average rating
