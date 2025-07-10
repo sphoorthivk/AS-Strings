@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader } from 'lucide-react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import { uploadAPI } from '../../services/api';
 
 interface ImageUploadProps {
   images: string[];
@@ -47,20 +46,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     });
 
     try {
-      const token = Cookies.get('token');
-      if (!token) {
-        alert('Please login as admin to upload images');
-        setUploading(false);
-        return;
-      }
-
-      const response = await axios.post('/api/upload/images', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
+      const response = await uploadAPI.uploadImages(formData);
       const newImages = [...images, ...response.data.images];
       onImagesChange(newImages);
     } catch (error: any) {
@@ -78,17 +64,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const removeImage = async (index: number) => {
-    const imageUrl = images[index];
+    const imageId = images[index];
     
     try {
-      const token = Cookies.get('token');
-      await axios.delete('/api/upload/images', {
-        data: { imageUrl },
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
+      await uploadAPI.deleteImage(imageId);
       const newImages = images.filter((_, i) => i !== index);
       onImagesChange(newImages);
     } catch (error: any) {
@@ -122,6 +101,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
+  };
+
+  const getImageUrl = (imageId: string) => {
+    return `/api/upload/images/${imageId}`;
   };
 
   return (
@@ -174,12 +157,16 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       {/* Image Preview Grid */}
       {images.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {images.map((image, index) => (
-            <div key={index} className="relative group">
+          {images.map((imageId, index) => (
+            <div key={imageId} className="relative group">
               <img
-                src={image}
+                src={getImageUrl(imageId)}
                 alt={`Product ${index + 1}`}
                 className="w-full h-32 object-cover rounded-lg border"
+                onError={(e) => {
+                  console.error('Image load error:', imageId);
+                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+                }}
               />
               <button
                 type="button"

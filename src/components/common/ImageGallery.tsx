@@ -32,7 +32,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowRight') nextModalImage();
     if (e.key === 'ArrowLeft') prevModalImage();
-    if (e.key === 'Escape') setShowModal(false);
+    return `/api/upload/images/${imageId}`;
   };
 
   if (!images || images.length === 0) {

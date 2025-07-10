@@ -43,8 +43,8 @@ const productSchema = new mongoose.Schema({
     trim: true
   }],
   images: [{
-    type: String,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Image'
   }],
   category: {
     type: String,

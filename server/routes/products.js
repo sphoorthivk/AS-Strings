@@ -1,5 +1,6 @@
 import express from 'express';
 import Product from '../models/Product.js';
+import Image from '../models/Image.js';
 import { auth, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -62,7 +63,8 @@ router.get('/', async (req, res) => {
       .sort(sortOptions)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .populate('reviews.user', 'name');
+      .populate('reviews.user', 'name')
+      .populate('images');
 
     const total = await Product.countDocuments(filter);
 
@@ -81,7 +83,8 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate('reviews.user', 'name');
+      .populate('reviews.user', 'name')
+      .populate('images');
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -96,8 +99,28 @@ router.get('/:id', async (req, res) => {
 // Create product (Admin only)
 router.post('/', adminAuth, async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const productData = { ...req.body };
+    
+    // Update image references in database
+    if (productData.images && productData.images.length > 0) {
+      await Image.updateMany(
+        { _id: { $in: productData.images } },
+        { productId: null } // Will be updated after product creation
+      );
+    }
+    
+    const product = new Product(productData);
     await product.save();
+    
+    // Update image references with product ID
+    if (productData.images && productData.images.length > 0) {
+      await Image.updateMany(
+        { _id: { $in: productData.images } },
+        { productId: product._id }
+      );
+    }
+    
+    await product.populate('images');
     res.status(201).json(product);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -107,11 +130,36 @@ router.post('/', adminAuth, async (req, res) => {
 // Update product (Admin only)
 router.put('/:id', adminAuth, async (req, res) => {
   try {
+    const productData = { ...req.body };
+    
+    // Get current product to handle image changes
+    const currentProduct = await Product.findById(req.params.id);
+    if (!currentProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    // Update image references
+    if (productData.images) {
+      // Remove product reference from old images
+      await Image.updateMany(
+        { productId: req.params.id },
+        { productId: null }
+      );
+      
+      // Add product reference to new images
+      if (productData.images.length > 0) {
+        await Image.updateMany(
+          { _id: { $in: productData.images } },
+          { productId: req.params.id }
+        );
+      }
+    }
+    
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      productData,
       { new: true, runValidators: true }
-    );
+    ).populate('images');
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -126,6 +174,18 @@ router.put('/:id', adminAuth, async (req, res) => {
 // Delete product (Admin only)
 router.delete('/:id', adminAuth, async (req, res) => {
   try {
+    // Get product to find associated images
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    // Delete associated images
+    if (product.images && product.images.length > 0) {
+      await Image.deleteMany({ _id: { $in: product.images } });
+    }
+    
+    // Delete the product
     const product = await Product.findByIdAndDelete(req.params.id);
     
     if (!product) {

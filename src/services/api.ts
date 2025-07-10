@@ -95,8 +95,12 @@ export const uploadAPI = {
     },
   }),
   
-  deleteImage: (imageUrl: string) => api.delete('/upload/images', {
-    data: { imageUrl }
+  deleteImage: (imageId: string) => api.delete(`/upload/images/${imageId}`),
+  
+  getImage: (imageId: string) => api.get(`/upload/images/${imageId}`, {
+    responseType: 'blob'
   }),
+  
+  getAllImages: (params?: any) => api.get('/upload/images', { params }),
 };
 export default api;
