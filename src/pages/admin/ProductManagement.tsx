@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, Search, Filter, Eye, Upload, X, Star, Package, Doll
 import AdminLayout from '../../components/admin/AdminLayout';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ImageUpload from '../../components/admin/ImageUpload';
 
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -206,17 +207,11 @@ const ProductManagement: React.FC = () => {
   };
 
   const handleImageAdd = () => {
-    const url = prompt('Enter image URL:');
-    if (url) {
-      setFormData({ ...formData, images: [...formData.images, url] });
-    }
+    // This function is no longer needed as we use the ImageUpload component
   };
 
   const handleImageRemove = (index: number) => {
-    setFormData({
-      ...formData,
-      images: formData.images.filter((_, i) => i !== index)
-    });
+    // This function is handled by the ImageUpload component
   };
 
   const handleTagAdd = () => {
@@ -924,46 +919,14 @@ const ProductManagement: React.FC = () => {
 
                 {/* Images */}
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="block text-lg font-semibold text-gray-700">
-                      Product Images *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleImageAdd}
-                      className="text-purple-600 hover:text-purple-700 flex items-center space-x-1"
-                    >
-                      <Upload size={16} />
-                      <span>Add Image URL</span>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {formData.images.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={image}
-                          alt={`Product ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleImageRemove(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                        >
-                          <X size={12} />
-                        </button>
-                        <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
-                          {index + 1}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {formData.images.length === 0 && (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                      <Upload size={48} className="mx-auto text-gray-400 mb-4" />
-                      <p className="text-gray-500">No images added yet. Click "Add Image URL" to add product images.</p>
-                    </div>
-                  )}
+                  <label className="block text-lg font-semibold text-gray-700 mb-4">
+                    Product Images *
+                  </label>
+                  <ImageUpload
+                    images={formData.images}
+                    onImagesChange={(images) => setFormData({ ...formData, images })}
+                    maxImages={10}
+                  />
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-6 border-t">

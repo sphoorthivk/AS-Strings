@@ -87,4 +87,16 @@ export const categoriesAPI = {
   deleteCategory: (id: string) => api.delete(`/categories/${id}`),
 };
 
+// Upload API
+export const uploadAPI = {
+  uploadImages: (formData: FormData) => api.post('/upload/images', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  
+  deleteImage: (imageUrl: string) => api.delete('/upload/images', {
+    data: { imageUrl }
+  }),
+};
 export default api;
