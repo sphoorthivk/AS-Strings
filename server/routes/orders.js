@@ -8,7 +8,7 @@ const router = express.Router();
 // Create order
 router.post('/', auth, async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod } = req.body;
+    const { items, shippingAddress, paymentMethod, shippingCost = 0 } = req.body;
 
     // Calculate total amount
     let totalAmount = 0;
@@ -48,7 +48,8 @@ router.post('/', auth, async (req, res) => {
       items: orderItems,
       shippingAddress,
       paymentMethod,
-      totalAmount
+      totalAmount: totalAmount + shippingCost,
+      shippingCost
     });
 
     await order.save();

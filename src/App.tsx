@@ -7,7 +7,14 @@ import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ProductList from './pages/products/ProductList';
+import ProductDetail from './pages/products/ProductDetail';
+import Cart from './pages/cart/Cart';
+import Checkout from './pages/checkout/Checkout';
+import OrderConfirmation from './pages/orders/OrderConfirmation';
+import MyOrders from './pages/orders/MyOrders';
+import OrderDetail from './pages/orders/OrderDetail';
 import CategoryManagement from './pages/admin/CategoryManagement';
+import DeliveryZoneManagement from './pages/admin/DeliveryZoneManagement';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/ProductManagement';
 import OrderManagement from './pages/admin/OrderManagement';
@@ -25,6 +32,12 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/products" element={<ProductList />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+              <Route path="/orders" element={<MyOrders />} />
+              <Route path="/order/:orderId" element={<OrderDetail />} />
               <Route path="/women" element={<ProductList />} />
               <Route path="/men" element={<ProductList />} />
               <Route path="/categories" element={<ProductList />} />
@@ -42,6 +55,7 @@ function App() {
               <Route path="/admin/users" element={<UserManagement />} />
               <Route path="/admin/analytics" element={<Analytics />} />
               <Route path="/admin/categories" element={<CategoryManagement />} />
+              <Route path="/admin/delivery-zones" element={<DeliveryZoneManagement />} />
             </Routes>
           </Layout>
         </Router>
