@@ -7,37 +7,37 @@ const CategorySection: React.FC = () => {
       id: 'women-dresses',
       name: 'Women\'s Dresses',
       image: 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/women/dresses',
+      link: '/products/women/Dresses',
     },
     {
       id: 'men-shirts',
       name: 'Men\'s Shirts',
       image: 'https://images.pexels.com/photos/1192609/pexels-photo-1192609.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/men/shirts',
+      link: '/products/men/T-Shirts',
     },
     {
       id: 'women-accessories',
       name: 'Accessories',
       image: 'https://images.pexels.com/photos/1667088/pexels-photo-1667088.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/accessories',
+      link: '/products/unisex/Accessories',
     },
     {
       id: 'shoes',
       name: 'Shoes',
       image: 'https://images.pexels.com/photos/1032110/pexels-photo-1032110.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/shoes',
+      link: '/products/unisex/Shoes',
     },
     {
       id: 'jackets',
       name: 'Jackets & Coats',
       image: 'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/jackets',
+      link: '/products/unisex/Jackets',
     },
     {
       id: 'activewear',
       name: 'Activewear',
       image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=600',
-      link: '/activewear',
+      link: '/products/unisex/Activewear',
     },
   ];
 

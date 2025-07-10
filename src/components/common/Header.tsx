@@ -40,13 +40,13 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/women" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link to="/products/women" className="text-gray-700 hover:text-purple-600 transition-colors">
               Women
             </Link>
-            <Link to="/men" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link to="/products/men" className="text-gray-700 hover:text-purple-600 transition-colors">
               Men
             </Link>
-            <Link to="/categories" className="text-gray-700 hover:text-purple-600 transition-colors">
+            <Link to="/products" className="text-gray-700 hover:text-purple-600 transition-colors">
               Categories
             </Link>
             <Link to="/about" className="text-gray-700 hover:text-purple-600 transition-colors">
@@ -156,13 +156,13 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="space-y-2">
-              <Link to="/women" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
+              <Link to="/products/women" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 Women
               </Link>
-              <Link to="/men" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
+              <Link to="/products/men" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 Men
               </Link>
-              <Link to="/categories" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
+              <Link to="/products" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 Categories
               </Link>
               <Link to="/about" className="block py-2 text-gray-700 hover:text-purple-600 transition-colors">

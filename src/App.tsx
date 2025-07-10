@@ -38,15 +38,9 @@ function App() {
               <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
               <Route path="/orders" element={<MyOrders />} />
               <Route path="/order/:orderId" element={<OrderDetail />} />
-              <Route path="/women" element={<ProductList />} />
-              <Route path="/men" element={<ProductList />} />
-              <Route path="/categories" element={<ProductList />} />
-              <Route path="/women/dresses" element={<ProductList />} />
-              <Route path="/men/shirts" element={<ProductList />} />
-              <Route path="/accessories" element={<ProductList />} />
-              <Route path="/shoes" element={<ProductList />} />
-              <Route path="/jackets" element={<ProductList />} />
-              <Route path="/activewear" element={<ProductList />} />
+              <Route path="/products/:gender?" element={<ProductList />} />
+              <Route path="/products/:gender/:category" element={<ProductList />} />
+              <Route path="/search" element={<ProductList />} />
               <Route path="/about" element={<div className="container mx-auto px-4 py-16"><h1 className="text-3xl font-bold text-center">About Us</h1></div>} />
               <Route path="/contact" element={<div className="container mx-auto px-4 py-16"><h1 className="text-3xl font-bold text-center">Contact Us</h1></div>} />
               <Route path="/admin" element={<Dashboard />} />

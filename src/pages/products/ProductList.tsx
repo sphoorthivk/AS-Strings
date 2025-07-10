@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Star, Filter, Grid, List } from 'lucide-react';
-import { productsAPI } from '../../services/api';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Heart, ShoppingCart, Star, Filter, Grid, List, Package } from 'lucide-react';
+import { productsAPI, categoriesAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ProductList: React.FC = () => {
+  const { gender, category } = useParams();
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
-    category: '',
+    category: category || '',
+    gender: gender || '',
     priceRange: '',
     size: '',
     color: '',
@@ -21,17 +25,40 @@ const ProductList: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, [filters, currentPage]);
+
+  useEffect(() => {
+    // Update filters when URL params change
+    setFilters(prev => ({
+      ...prev,
+      category: category || '',
+      gender: gender || '',
+    }));
+  }, [gender, category]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await categoriesAPI.getCategories();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      const searchQuery = searchParams.get('q');
       const params = {
         page: currentPage,
         limit: 12,
-        ...filters,
-        category: filters.category === 'All' ? '' : filters.category,
-        size: filters.size === 'All' ? '' : filters.size,
+        category: filters.category && filters.category !== 'All' ? filters.category : '',
+        gender: filters.gender && filters.gender !== 'All' ? filters.gender : '',
+        size: filters.size && filters.size !== 'All' ? filters.size : '',
+        color: filters.color && filters.color !== 'All' ? filters.color : '',
+        sortBy: filters.sortBy,
+        search: searchQuery || '',
       };
 
       const response = await productsAPI.getProducts(params);
@@ -44,9 +71,11 @@ const ProductList: React.FC = () => {
     }
   };
 
-  const categories = ['All', 'Dresses', 'Jackets', 'T-Shirts', 'Shoes', 'Blouses', 'Jeans'];
+  const availableCategories = ['All', ...categories.map(cat => cat.name)];
+  const genderOptions = ['All', 'women', 'men', 'unisex'];
   const priceRanges = ['All', '$0-$50', '$50-$100', '$100-$200', '$200+'];
   const sizes = ['All', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const colors = ['All', 'Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Pink', 'Gray', 'Brown'];
   const sortOptions = [
     { value: 'newest', label: 'Newest' },
     { value: 'price-low', label: 'Price: Low to High' },
@@ -197,13 +226,26 @@ const ProductList: React.FC = () => {
             
             <div className="space-y-6">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                <select
+                  value={filters.gender}
+                  onChange={(e) => setFilters({...filters, gender: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  {genderOptions.map(gender => (
+                    <option key={gender} value={gender}>{gender === 'All' ? 'All Genders' : gender.charAt(0).toUpperCase() + gender.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select
                   value={filters.category}
                   onChange={(e) => setFilters({...filters, category: e.target.value})}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
                 >
-                  {categories.map(category => (
+                  {availableCategories.map(category => (
                     <option key={category} value={category}>{category}</option>
                   ))}
                 </select>
@@ -234,6 +276,38 @@ const ProductList: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                <select
+                  value={filters.color}
+                  onChange={(e) => setFilters({...filters, color: e.target.value})}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                >
+                  {colors.map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={() => {
+                  setFilters({
+                    category: '',
+                    gender: '',
+                    priceRange: '',
+                    size: '',
+                    color: '',
+                    sortBy: 'newest',
+                  });
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Clear All Filters
+              </button>
             </div>
           </div>
         </div>
@@ -243,7 +317,10 @@ const ProductList: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">All Products</h1>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {gender && gender !== 'all' ? `${gender.charAt(0).toUpperCase() + gender.slice(1)}'s ` : ''}
+                {category && category !== 'all' ? category : 'All Products'}
+              </h1>
               <p className="text-gray-600">Showing {products.length} products</p>
             </div>
             
@@ -297,14 +374,38 @@ const ProductList: React.FC = () => {
               {viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
               ) : (
                 <div className="space-y-4">
                   {products.map(product => (
-                    <ProductListItem key={product.id} product={product} />
+                    <ProductListItem key={product._id} product={product} />
                   ))}
+                </div>
+              )}
+
+              {products.length === 0 && !loading && (
+                <div className="text-center py-16">
+                  <Package size={64} className="mx-auto text-gray-400 mb-4" />
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">No products found</h2>
+                  <p className="text-gray-600 mb-8">Try adjusting your filters or search terms.</p>
+                  <button
+                    onClick={() => {
+                      setFilters({
+                        category: '',
+                        gender: '',
+                        priceRange: '',
+                        size: '',
+                        color: '',
+                        sortBy: 'newest',
+                      });
+                      setCurrentPage(1);
+                    }}
+                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
                 </div>
               )}
             </>

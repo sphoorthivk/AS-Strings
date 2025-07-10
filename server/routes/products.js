@@ -25,10 +25,10 @@ router.get('/', async (req, res) => {
     // Build filter object
     const filter = { isActive: true };
     
-    if (category && category !== 'All') filter.category = category;
-    if (gender && gender !== 'All') filter.gender = gender;
-    if (size && size !== 'All') filter.sizes = { $in: [size] };
-    if (color && color !== 'All') filter.colors = { $in: [color] };
+    if (category && category !== 'All' && category !== '') filter.category = category;
+    if (gender && gender !== 'All' && gender !== '') filter.gender = gender;
+    if (size && size !== 'All' && size !== '') filter.sizes = { $in: [size] };
+    if (color && color !== 'All' && color !== '') filter.colors = { $in: [color] };
     if (featured === 'true') filter.featured = true;
     
     if (minPrice || maxPrice) {
@@ -41,13 +41,22 @@ router.get('/', async (req, res) => {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } }
+        { category: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
       ];
     }
 
     // Sort options
     const sortOptions = {};
-    sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    if (sortBy === 'price-low') {
+      sortOptions.price = 1;
+    } else if (sortBy === 'price-high') {
+      sortOptions.price = -1;
+    } else if (sortBy === 'rating') {
+      sortOptions.rating = -1;
+    } else {
+      sortOptions.createdAt = -1; // newest first
+    }
 
     const products = await Product.find(filter)
       .sort(sortOptions)
