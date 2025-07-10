@@ -29,6 +29,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     setUploading(true);
     const formData = new FormData();
     
+    // Validate and add files
+    const validFiles: File[] = [];
     Array.from(files).forEach(file => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -42,24 +44,48 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         return;
       }
       
+      validFiles.push(file);
+    });
+
+    if (validFiles.length === 0) {
+      setUploading(false);
+      return;
+    }
+
+    // Add valid files to form data
+    validFiles.forEach(file => {
       formData.append('images', file);
     });
 
     try {
+      console.log('Uploading images...', validFiles.length);
       const response = await uploadAPI.uploadImages(formData);
-      const newImages = [...images, ...response.data.images];
-      onImagesChange(newImages);
+      console.log('Upload response:', response.data);
+      
+      if (response.data && response.data.images) {
+        const newImages = [...images, ...response.data.images];
+        onImagesChange(newImages);
+        console.log('Images updated:', newImages);
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error: any) {
       console.error('Upload error:', error);
+      
+      let errorMessage = 'Error uploading images';
+      
       if (error.response?.status === 401) {
-        alert('Please login as admin to upload images');
+        errorMessage = 'Please login as admin to upload images';
       } else if (error.response?.status === 403) {
-        alert('Admin access required to upload images');
-      } else {
-        const errorMessage = error.response?.data?.message || error.message || 'Error uploading images';
-        alert(errorMessage);
-        console.error('Detailed error:', error.response?.data);
+        errorMessage = 'Admin access required to upload images';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
+      
+      alert(errorMessage);
+      console.error('Detailed error:', error.response?.data || error);
     } finally {
       setUploading(false);
     }
@@ -69,14 +95,17 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const imageId = images[index];
     
     try {
+      console.log('Deleting image:', imageId);
       await uploadAPI.deleteImage(imageId);
       const newImages = images.filter((_, i) => i !== index);
       onImagesChange(newImages);
+      console.log('Image deleted successfully');
     } catch (error: any) {
       console.error('Delete error:', error);
       // Still remove from UI even if deletion fails
       const newImages = images.filter((_, i) => i !== index);
       onImagesChange(newImages);
+      alert('Failed to delete image from server, but removed from form');
     }
   };
 
@@ -106,7 +135,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   };
 
   const getImageUrl = (imageId: string) => {
-    return `/api/upload/images/${imageId}`;
+    // Check if it's already a full URL
+    if (imageId.startsWith('http') || imageId.startsWith('data:')) {
+      return imageId;
+    }
+    // Construct the API URL
+    return `http://localhost:5000/api/upload/images/${imageId}`;
   };
 
   return (
@@ -167,7 +201,11 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 className="w-full h-32 object-cover rounded-lg border"
                 onError={(e) => {
                   console.error('Image load error:', imageId);
-                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+                  const target = e.currentTarget as HTMLImageElement;
+                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+                }}
+                onLoad={() => {
+                  console.log('Image loaded successfully:', imageId);
                 }}
               />
               <button
