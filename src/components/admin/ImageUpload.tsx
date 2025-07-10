@@ -31,11 +31,29 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     const formData = new FormData();
     
     Array.from(files).forEach(file => {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name} is not an image file`);
+        return;
+      }
+      
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`${file.name} is too large. Maximum size is 5MB`);
+        return;
+      }
+      
       formData.append('images', file);
     });
 
     try {
       const token = Cookies.get('token');
+      if (!token) {
+        alert('Please login as admin to upload images');
+        setUploading(false);
+        return;
+      }
+
       const response = await axios.post('/api/upload/images', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -47,7 +65,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       onImagesChange(newImages);
     } catch (error: any) {
       console.error('Upload error:', error);
-      alert(error.response?.data?.message || 'Error uploading images');
+      if (error.response?.status === 401) {
+        alert('Please login as admin to upload images');
+      } else if (error.response?.status === 403) {
+        alert('Admin access required to upload images');
+      } else {
+        alert(error.response?.data?.message || 'Error uploading images');
+      }
     } finally {
       setUploading(false);
     }
