@@ -24,7 +24,8 @@ const imageSchema = new mongoose.Schema({
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
-    default: null
+    default: null,
+    index: true // Add index for better query performance
   }
 }, {
   timestamps: true

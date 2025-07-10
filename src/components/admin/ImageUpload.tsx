@@ -56,7 +56,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       } else if (error.response?.status === 403) {
         alert('Admin access required to upload images');
       } else {
-        alert(error.response?.data?.message || 'Error uploading images');
+        const errorMessage = error.response?.data?.message || error.message || 'Error uploading images';
+        alert(errorMessage);
+        console.error('Detailed error:', error.response?.data);
       }
     } finally {
       setUploading(false);

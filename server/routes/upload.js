@@ -24,7 +24,8 @@ router.post('/images', adminAuth, upload.array('images', 10), async (req, res) =
         originalName: file.originalname,
         mimetype: file.mimetype,
         size: file.size,
-        data: base64Data
+        data: base64Data,
+        productId: null // Will be set when product is created/updated
       });
 
       const savedImage = await image.save();

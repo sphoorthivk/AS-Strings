@@ -101,14 +101,6 @@ router.post('/', adminAuth, async (req, res) => {
   try {
     const productData = { ...req.body };
     
-    // Update image references in database
-    if (productData.images && productData.images.length > 0) {
-      await Image.updateMany(
-        { _id: { $in: productData.images } },
-        { productId: null } // Will be updated after product creation
-      );
-    }
-    
     const product = new Product(productData);
     await product.save();
     
@@ -123,6 +115,7 @@ router.post('/', adminAuth, async (req, res) => {
     await product.populate('images');
     res.status(201).json(product);
   } catch (error) {
+    console.error('Product creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

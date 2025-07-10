@@ -81,6 +81,27 @@ const ProductManagement: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate required fields
+      if (!formData.name || !formData.description || !formData.price || !formData.category) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (formData.sizes.length === 0) {
+        alert('Please select at least one size');
+        return;
+      }
+
+      if (formData.colors.length === 0) {
+        alert('Please select at least one color');
+        return;
+      }
+
+      if (formData.images.length === 0) {
+        alert('Please upload at least one image');
+        return;
+      }
+
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -107,7 +128,9 @@ const ProductManagement: React.FC = () => {
       resetForm();
       fetchProducts();
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error saving product');
+      console.error('Product save error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Error saving product';
+      alert(errorMessage);
     }
   };
 

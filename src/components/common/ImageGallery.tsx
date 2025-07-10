@@ -32,6 +32,14 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowRight') nextModalImage();
     if (e.key === 'ArrowLeft') prevModalImage();
+  };
+
+  const getImageUrl = (imageId: string) => {
+    // Check if it's already a full URL
+    if (imageId.startsWith('http') || imageId.startsWith('/api/')) {
+      return imageId;
+    }
+    // Otherwise, construct the API URL
     return `/api/upload/images/${imageId}`;
   };
 
@@ -53,7 +61,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
         <div className="relative group">
           <div className="aspect-square overflow-hidden rounded-2xl bg-gray-100 cursor-pointer">
             <img
-              src={images[selectedImage]}
+              src={getImageUrl(images[selectedImage])}
               alt={`${productName} - Image ${selectedImage + 1}`}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               onClick={() => openModal(selectedImage)}
@@ -98,7 +106,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                 }`}
               >
                 <img
-                  src={image}
+                  src={getImageUrl(image)}
                   alt={`${productName} - Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
@@ -127,7 +135,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 
             {/* Main modal image */}
             <img
-              src={images[modalImage]}
+              src={getImageUrl(images[modalImage])}
               alt={`${productName} - Image ${modalImage + 1}`}
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
@@ -179,7 +187,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
                     }`}
                   >
                     <img
-                      src={image}
+                      src={getImageUrl(image)}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
