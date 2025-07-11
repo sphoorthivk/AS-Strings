@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CartItem, Product, CartContextType } from '../types';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -17,6 +18,7 @@ interface CartProviderProps {
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -30,13 +32,35 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [items]);
 
   const addItem = (product: Product, size: string, quantity: number) => {
+    // Validate inputs
+    if (!product || !size || quantity <= 0) {
+      console.error('Invalid product data for cart');
+      showToast('Invalid product data', 'error');
+      return;
+    }
+    
+    // Check stock availability
+    const availableStock = product.stock?.[size] || 0;
+    if (availableStock < quantity) {
+      showToast(`Only ${availableStock} items available in size ${size}`, 'error');
+      return;
+    }
+    
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.productId === product._id && item.size === size);
       
       if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
+        
+        // Check if new quantity exceeds stock
+        if (newQuantity > availableStock) {
+          showToast(`Cannot add more items. Only ${availableStock} available in size ${size}`, 'error');
+          return prevItems;
+        }
+        
         return prevItems.map(item =>
           item.productId === product._id && item.size === size
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQuantity }
             : item
         );
       }

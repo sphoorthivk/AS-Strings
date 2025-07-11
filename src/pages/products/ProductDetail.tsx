@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Star, Minus, Plus, Truck, Shield, RotateCcw } from
 import { productsAPI } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ImageGallery from '../../components/common/ImageGallery';
 
@@ -12,6 +13,7 @@ const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('');
@@ -44,24 +46,24 @@ const ProductDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      alert('Please select a size');
+      showToast('Please select a size', 'warning');
       return;
     }
     
     const stock = product.stock?.[selectedSize] || 0;
     if (stock < quantity) {
-      alert(`Only ${stock} items available in size ${selectedSize}`);
+      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
       return;
     }
 
     addItem(product, selectedSize, quantity);
-    alert('Product added to cart!');
+    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
   };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      alert('Please login to submit a review');
+      showToast('Please login to submit a review', 'warning');
       return;
     }
 
@@ -70,8 +72,9 @@ const ProductDetail: React.FC = () => {
       setShowReviewForm(false);
       setReviewData({ rating: 5, comment: '' });
       fetchProduct(); // Refresh to show new review
+      showToast('Review submitted successfully!', 'success');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error submitting review');
+      showToast(error.response?.data?.message || 'Error submitting review', 'error');
     }
   };
 

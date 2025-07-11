@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, Truck, MapPin, Phone, User } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { ordersAPI } from '../../services/api';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
   const [formData, setFormData] = useState({
@@ -77,6 +79,20 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.fullName || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zipCode) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    
+    // Validate phone number
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+      showToast('Please enter a valid phone number', 'error');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -95,14 +111,18 @@ const Checkout: React.FC = () => {
           zipCode: formData.zipCode,
           country: formData.country
         },
-        paymentMethod: formData.paymentMethod
+        paymentMethod: formData.paymentMethod,
+        shippingCost: shippingCost
       };
 
       const response = await ordersAPI.createOrder(orderData);
       clearCart();
+      showToast('Order placed successfully!', 'success');
       navigate(`/order-confirmation/${response.data._id}`);
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Error placing order');
+      console.error('Order creation error:', error);
+      const errorMessage = error.response?.data?.message || 'Error placing order. Please try again.';
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

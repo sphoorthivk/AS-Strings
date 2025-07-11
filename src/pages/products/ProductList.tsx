@@ -3,10 +3,16 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Heart, ShoppingCart, Star, Filter, Grid, List, Package } from 'lucide-react';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const ProductList: React.FC = () => {
   const { gender, category } = useParams();
   const [searchParams] = useSearchParams();
+  const { addItem } = useCart();
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -83,6 +89,32 @@ const ProductList: React.FC = () => {
     { value: 'rating', label: 'Highest Rated' },
   ];
 
+  const handleQuickAddToCart = (product: any) => {
+    // For quick add, use the first available size
+    const availableSize = product.sizes?.find((size: string) => {
+      const stock = product.stock?.[size] || 0;
+      return stock > 0;
+    });
+    
+    if (!availableSize) {
+      showToast('This product is out of stock', 'error');
+      return;
+    }
+    
+    addItem(product, availableSize, 1);
+    showToast(`Added ${product.name} (${availableSize}) to cart!`, 'success');
+  };
+
+  const handleToggleWishlist = (productId: string) => {
+    if (!user) {
+      showToast('Please login to add items to wishlist', 'warning');
+      return;
+    }
+    
+    // This would typically call an API to add/remove from wishlist
+    console.log('Toggle wishlist for product:', productId);
+    showToast('Added to wishlist!', 'success');
+  };
   const ProductCard = ({ product }: { product: any }) => (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative overflow-hidden">
@@ -101,13 +133,19 @@ const ProductList: React.FC = () => {
         </div>
 
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors">
+          <button 
+            onClick={() => handleToggleWishlist(product._id)}
+            className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
+          >
             <Heart size={16} className="text-gray-600" />
           </button>
         </div>
 
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2">
+          <button 
+            onClick={() => handleQuickAddToCart(product)}
+            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+          >
             <ShoppingCart size={16} />
             <span>Add to Cart</span>
           </button>
@@ -196,10 +234,16 @@ const ProductList: React.FC = () => {
               )}
             </div>
             <div className="flex items-center space-x-2 mt-2">
-              <button className="p-2 text-gray-600 hover:text-purple-600 transition-colors">
+              <button 
+                onClick={() => handleToggleWishlist(product._id)}
+                className="p-2 text-gray-600 hover:text-purple-600 transition-colors"
+              >
                 <Heart size={16} />
               </button>
-              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2">
+              <button 
+                onClick={() => handleQuickAddToCart(product)}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+              >
                 <ShoppingCart size={16} />
                 <span>Add to Cart</span>
               </button>

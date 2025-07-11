@@ -90,7 +90,7 @@ const Header: React.FC = () => {
             <Link to="/cart" className="p-2 text-gray-700 hover:text-purple-600 transition-colors relative">
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1">
                   {totalItems}
                 </span>
               )}
@@ -191,7 +191,7 @@ const Header: React.FC = () => {
 
               <Link to="/cart" className="flex items-center space-x-2 py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 <ShoppingCart size={20} />
-                <span>Cart ({totalItems})</span>
+                <span>Cart {totalItems > 0 && `(${totalItems})`}</span>
               </Link>
 
               {user ? (

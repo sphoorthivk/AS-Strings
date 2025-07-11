@@ -2,9 +2,28 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useToast } from '../../contexts/ToastContext';
 
 const Cart: React.FC = () => {
   const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
+  const { showToast } = useToast();
+
+  const handleQuantityChange = (productId: string, size: string, newQuantity: number, maxStock: number) => {
+    if (newQuantity <= 0) {
+      if (window.confirm('Remove this item from cart?')) {
+        removeItem(productId, size);
+        showToast('Item removed from cart', 'info');
+      }
+      return;
+    }
+    
+    if (newQuantity > maxStock) {
+      showToast(`Only ${maxStock} items available`, 'error');
+      return;
+    }
+    
+    updateQuantity(productId, size, newQuantity);
+  };
 
   if (items.length === 0) {
     return (
@@ -50,18 +69,28 @@ const Cart: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
-                      onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
+                      onClick={() => {
+                        const maxStock = item.product.stock?.[item.size] || 0;
+                        handleQuantityChange(item.productId, item.size, item.quantity - 1, maxStock);
+                      }}
                       className="p-2 hover:bg-gray-100 transition-colors"
                     >
                       <Minus size={16} />
                     </button>
                     <span className="px-4 py-2 font-medium">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
+                      onClick={() => {
+                        const maxStock = item.product.stock?.[item.size] || 0;
+                        handleQuantityChange(item.productId, item.size, item.quantity + 1, maxStock);
+                      }}
                       className="p-2 hover:bg-gray-100 transition-colors"
                     >
                       <Plus size={16} />
                     </button>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500">
+                    Stock: {item.product.stock?.[item.size] || 0}
                   </div>
                   
                   <button
