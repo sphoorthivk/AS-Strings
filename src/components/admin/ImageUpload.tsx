@@ -59,6 +59,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     try {
       console.log('Uploading images...', validFiles.length);
+      console.log('FormData entries:', Array.from(formData.entries()).map(([key, value]) => [key, value instanceof File ? value.name : value]));
       const response = await uploadAPI.uploadImages(formData);
       console.log('Upload response:', response.data);
       
@@ -78,6 +79,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
         errorMessage = 'Please login as admin to upload images';
       } else if (error.response?.status === 403) {
         errorMessage = 'Admin access required to upload images';
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data.message || 'Invalid file upload';
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message) {

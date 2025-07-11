@@ -99,24 +99,108 @@ router.get('/:id', async (req, res) => {
 // Create product (Admin only)
 router.post('/', adminAuth, async (req, res) => {
   try {
+    console.log('Creating product with data:', req.body);
+    console.log('User:', req.user?.email);
+    
     const productData = { ...req.body };
+    
+    // Validate required fields
+    if (!productData.name || !productData.description || !productData.price || !productData.category) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: name, description, price, and category are required' 
+      });
+    }
+
+    // Validate price
+    if (isNaN(productData.price) || productData.price <= 0) {
+      return res.status(400).json({ 
+        message: 'Price must be a valid positive number' 
+      });
+    }
+
+    // Validate sizes array
+    if (!productData.sizes || !Array.isArray(productData.sizes) || productData.sizes.length === 0) {
+      return res.status(400).json({ 
+        message: 'At least one size must be selected' 
+      });
+    }
+
+    // Validate colors array
+    if (!productData.colors || !Array.isArray(productData.colors) || productData.colors.length === 0) {
+      return res.status(400).json({ 
+        message: 'At least one color must be selected' 
+      });
+    }
+
+    // Validate images array
+    if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
+      return res.status(400).json({ 
+        message: 'At least one image must be uploaded' 
+      });
+    }
+
+    // Validate stock object
+    if (!productData.stock || typeof productData.stock !== 'object') {
+      return res.status(400).json({ 
+        message: 'Stock information is required for all sizes' 
+      });
+    }
+
+    // Ensure stock is provided for all sizes
+    for (const size of productData.sizes) {
+      if (!(size in productData.stock)) {
+        productData.stock[size] = 0;
+      }
+    }
+
+    console.log('Validated product data:', productData);
     
     const product = new Product(productData);
     await product.save();
     
+    console.log('Product created with ID:', product._id);
+    
     // Update image references with product ID
     if (productData.images && productData.images.length > 0) {
-      await Image.updateMany(
-        { _id: { $in: productData.images } },
-        { productId: product._id }
-      );
+      try {
+        const updateResult = await Image.updateMany(
+          { _id: { $in: productData.images } },
+          { productId: product._id }
+        );
+        console.log('Updated image references:', updateResult);
+      } catch (imageError) {
+        console.error('Error updating image references:', imageError);
+        // Don't fail the product creation if image update fails
+      }
     }
     
     await product.populate('images');
+    console.log('Product creation successful');
     res.status(201).json(product);
   } catch (error) {
     console.error('Product creation error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        errors: validationErrors 
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'Product with this SKU already exists' 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error creating product', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

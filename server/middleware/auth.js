@@ -28,7 +28,9 @@ const auth = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
   try {
+    console.log('Admin auth middleware called');
     await auth(req, res, () => {
+      console.log('User authenticated:', req.user?.email, 'Role:', req.user?.role);
       if (req.user.role !== 'admin') {
         console.log('User is not admin:', req.user.email, req.user.role);
         return res.status(403).json({ message: 'Access denied. Admin only.' });

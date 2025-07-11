@@ -10,6 +10,7 @@ router.post('/images', adminAuth, upload.array('images', 10), async (req, res) =
   try {
     console.log('Upload request received');
     console.log('Files:', req.files?.length || 0);
+    console.log('User:', req.user?.email);
     
     if (!req.files || req.files.length === 0) {
       console.log('No files uploaded');
@@ -22,6 +23,22 @@ router.post('/images', adminAuth, upload.array('images', 10), async (req, res) =
       try {
         console.log(`Processing file: ${file.originalname}, size: ${file.size}`);
         
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+          console.log(`File too large: ${file.originalname}`);
+          return res.status(400).json({ 
+            message: `File ${file.originalname} is too large. Maximum size is 5MB.` 
+          });
+        }
+
+        // Validate file type
+        if (!file.mimetype.startsWith('image/')) {
+          console.log(`Invalid file type: ${file.mimetype}`);
+          return res.status(400).json({ 
+            message: `File ${file.originalname} is not a valid image.` 
+          });
+        }
+
         // Convert buffer to base64
         const base64Data = file.buffer.toString('base64');
         
@@ -40,7 +57,10 @@ router.post('/images', adminAuth, upload.array('images', 10), async (req, res) =
         savedImages.push(savedImage._id);
       } catch (fileError) {
         console.error(`Error processing file ${file.originalname}:`, fileError);
-        throw fileError;
+        return res.status(500).json({ 
+          message: `Error processing file ${file.originalname}`, 
+          error: fileError.message 
+        });
       }
     }
     
