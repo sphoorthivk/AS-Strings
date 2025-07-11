@@ -48,8 +48,7 @@ const productSchema = new mongoose.Schema({
   }],
   category: {
     type: String,
-    required: true,
-    enum: ['Dresses', 'Jackets', 'T-Shirts', 'Shoes', 'Blouses', 'Jeans', 'Accessories', 'Activewear', 'Kurti']
+    required: true
   },
   gender: {
     type: String,

@@ -71,7 +71,7 @@ const ProductManagement: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await categoriesAPI.getCategories();
+      const response = await categoriesAPI.getCategories({ active: true });
       setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);

@@ -1,6 +1,7 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import Image from '../models/Image.js';
+import Category from '../models/Category.js';
 import { auth, adminAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -111,6 +112,17 @@ router.post('/', adminAuth, async (req, res) => {
       });
     }
 
+    // Validate that the category exists in the database
+    const categoryExists = await Category.findOne({ 
+      name: productData.category,
+      isActive: true 
+    });
+    
+    if (!categoryExists) {
+      return res.status(400).json({ 
+        message: `Category "${productData.category}" does not exist or is inactive. Please create the category first.` 
+      });
+    }
     // Validate price
     if (isNaN(productData.price) || productData.price <= 0) {
       return res.status(400).json({ 
