@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const imageSchema = new mongoose.Schema({
+const mediaSchema = new mongoose.Schema({
   filename: {
     type: String,
     required: true
@@ -18,25 +18,34 @@ const imageSchema = new mongoose.Schema({
     required: true
   },
   data: {
-    type: String, // base64 encoded image data
+    type: String, // base64 encoded media data
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['image', 'video'],
     required: true
   },
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     default: null,
-    index: true // Add index for better query performance
+    index: true
+  },
+  order: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
 });
 
 // Virtual for getting the data URL
-imageSchema.virtual('dataUrl').get(function() {
+mediaSchema.virtual('dataUrl').get(function() {
   return `data:${this.mimetype};base64,${this.data}`;
 });
 
 // Ensure virtual fields are serialized
-imageSchema.set('toJSON', { virtuals: true });
+mediaSchema.set('toJSON', { virtuals: true });
 
-export default mongoose.model('Image', imageSchema);
+export default mongoose.model('Media', mediaSchema);

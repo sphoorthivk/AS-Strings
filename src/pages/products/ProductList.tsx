@@ -7,6 +7,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useWishlist } from '../../contexts/WishlistContext';
+import ProductQuickView from '../../components/common/ProductQuickView';
 
 const ProductList: React.FC = () => {
   const { gender, category } = useParams();
@@ -22,6 +23,7 @@ const ProductList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
   const [filters, setFilters] = useState({
     category: category || '',
     gender: gender || '',
@@ -122,7 +124,7 @@ const ProductList: React.FC = () => {
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative overflow-hidden">
         <img
-          src={product.images[0]}
+          src={product.media?.[0] ? `/api/upload/media/${product.media[0]._id || product.media[0]}` : product.images?.[0] || '/placeholder.jpg'}
           alt={product.name}
           className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -149,13 +151,21 @@ const ProductList: React.FC = () => {
         </div>
 
         <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button 
-            onClick={() => handleQuickAddToCart(product)}
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
-          >
-            <ShoppingCart size={16} />
-            <span>Add to Cart</span>
-          </button>
+          <div className="space-y-2">
+            <button 
+              onClick={() => setQuickViewProduct(product)}
+              className="w-full bg-white text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2 font-medium"
+            >
+              <span>Quick View</span>
+            </button>
+            <button 
+              onClick={() => handleQuickAddToCart(product)}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+            >
+              <ShoppingCart size={16} />
+              <span>Add to Cart</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -200,7 +210,7 @@ const ProductList: React.FC = () => {
     <div className="bg-white rounded-lg shadow-md p-6 flex items-center space-x-6">
       <div className="flex-shrink-0">
         <img
-          src={product.images[0]}
+          src={product.media?.[0] ? `/api/upload/media/${product.media[0]._id || product.media[0]}` : product.images?.[0] || '/placeholder.jpg'}
           alt={product.name}
           className="w-24 h-24 object-cover rounded-lg"
         />
@@ -241,6 +251,12 @@ const ProductList: React.FC = () => {
               )}
             </div>
             <div className="flex items-center space-x-2 mt-2">
+              <button 
+                onClick={() => setQuickViewProduct(product)}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2"
+              >
+                <span>Quick View</span>
+              </button>
               <button 
                 onClick={() => handleToggleWishlist(product._id)}
                 className={`p-2 transition-colors ${
@@ -505,6 +521,13 @@ const ProductList: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Quick View Modal */}
+      <ProductQuickView
+        product={quickViewProduct}
+        isOpen={!!quickViewProduct}
+        onClose={() => setQuickViewProduct(null)}
+      />
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ImageGallery from '../../components/common/ImageGallery';
+import MediaGallery from '../../components/common/MediaGallery';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -110,9 +110,9 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Product Images */}
-        <ImageGallery 
-          images={product.images} 
+        {/* Product Media */}
+        <MediaGallery 
+          media={product.media || product.images || []} 
           productName={product.name}
         />
 

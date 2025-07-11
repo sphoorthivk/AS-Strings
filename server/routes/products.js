@@ -1,6 +1,6 @@
 import express from 'express';
 import Product from '../models/Product.js';
-import Image from '../models/Image.js';
+import Media from '../models/Media.js';
 import Category from '../models/Category.js';
 import { auth, adminAuth } from '../middleware/auth.js';
 
@@ -65,7 +65,7 @@ router.get('/', async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .populate('reviews.user', 'name')
-      .populate('images');
+      .populate('media');
 
     const total = await Product.countDocuments(filter);
 
@@ -85,7 +85,7 @@ router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('reviews.user', 'name')
-      .populate('images');
+      .populate('media');
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -144,10 +144,10 @@ router.post('/', adminAuth, async (req, res) => {
       });
     }
 
-    // Validate images array
-    if (!productData.images || !Array.isArray(productData.images) || productData.images.length === 0) {
+    // Validate media array
+    if (!productData.media || !Array.isArray(productData.media) || productData.media.length === 0) {
       return res.status(400).json({ 
-        message: 'At least one image must be uploaded' 
+        message: 'At least one media file must be uploaded' 
       });
     }
 
@@ -172,21 +172,21 @@ router.post('/', adminAuth, async (req, res) => {
     
     console.log('Product created with ID:', product._id);
     
-    // Update image references with product ID
-    if (productData.images && productData.images.length > 0) {
+    // Update media references with product ID
+    if (productData.media && productData.media.length > 0) {
       try {
-        const updateResult = await Image.updateMany(
-          { _id: { $in: productData.images } },
+        const updateResult = await Media.updateMany(
+          { _id: { $in: productData.media } },
           { productId: product._id }
         );
-        console.log('Updated image references:', updateResult);
-      } catch (imageError) {
-        console.error('Error updating image references:', imageError);
-        // Don't fail the product creation if image update fails
+        console.log('Updated media references:', updateResult);
+      } catch (mediaError) {
+        console.error('Error updating media references:', mediaError);
+        // Don't fail the product creation if media update fails
       }
     }
     
-    await product.populate('images');
+    await product.populate('media');
     console.log('Product creation successful');
     res.status(201).json(product);
   } catch (error) {
@@ -221,24 +221,24 @@ router.put('/:id', adminAuth, async (req, res) => {
   try {
     const productData = { ...req.body };
     
-    // Get current product to handle image changes
+    // Get current product to handle media changes
     const currentProduct = await Product.findById(req.params.id);
     if (!currentProduct) {
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    // Update image references
-    if (productData.images) {
-      // Remove product reference from old images
-      await Image.updateMany(
+    // Update media references
+    if (productData.media) {
+      // Remove product reference from old media
+      await Media.updateMany(
         { productId: req.params.id },
         { productId: null }
       );
       
-      // Add product reference to new images
-      if (productData.images.length > 0) {
-        await Image.updateMany(
-          { _id: { $in: productData.images } },
+      // Add product reference to new media
+      if (productData.media.length > 0) {
+        await Media.updateMany(
+          { _id: { $in: productData.media } },
           { productId: req.params.id }
         );
       }
@@ -248,7 +248,7 @@ router.put('/:id', adminAuth, async (req, res) => {
       req.params.id,
       productData,
       { new: true, runValidators: true }
-    ).populate('images');
+    ).populate('media');
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -263,15 +263,15 @@ router.put('/:id', adminAuth, async (req, res) => {
 // Delete product (Admin only)
 router.delete('/:id', adminAuth, async (req, res) => {
   try {
-    // Get product to find associated images
+    // Get product to find associated media
     const products = await Product.findById(req.params.id);
     if (!products) {
       return res.status(404).json({ message: 'Product not found' });
     }
     
-    // Delete associated images
-    if (products.images && products.images.length > 0) {
-      await Image.deleteMany({ _id: { $in: products.images } });
+    // Delete associated media
+    if (products.media && products.media.length > 0) {
+      await Media.deleteMany({ _id: { $in: products.media } });
     }
     
     // Delete the product

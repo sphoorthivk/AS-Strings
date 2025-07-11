@@ -12,11 +12,11 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     console.log('File filter check:', file.originalname, file.mimetype);
-    if (file.mimetype.startsWith('image/')) {
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
-      console.log('File rejected:', file.mimetype);
-      cb(new Error('Only image files are allowed!'), false);
+      console.log('File rejected - not image or video:', file.mimetype);
+      cb(new Error('Only image and video files are allowed!'), false);
     }
   },
 });
@@ -35,8 +35,8 @@ const handleMulterError = (error, req, res, next) => {
     }
   }
   
-  if (error.message === 'Only image files are allowed!') {
-    return res.status(400).json({ message: 'Only image files are allowed.' });
+  if (error.message === 'Only image and video files are allowed!') {
+    return res.status(400).json({ message: 'Only image and video files are allowed.' });
   }
   
   next(error);

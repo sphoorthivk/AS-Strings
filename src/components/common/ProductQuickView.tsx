@@ -1,0 +1,217 @@
+import React, { useState } from 'react';
+import { X, ShoppingCart, Heart, Star, Minus, Plus } from 'lucide-react';
+import { useCart } from '../../contexts/CartContext';
+import { useWishlist } from '../../contexts/WishlistContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
+import MediaGallery from './MediaGallery';
+
+interface ProductQuickViewProps {
+  product: any;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, onClose }) => {
+  const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
+  const { toggleItem: toggleWishlist, isInWishlist } = useWishlist();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+
+  React.useEffect(() => {
+    if (product?.sizes?.length > 0) {
+      setSelectedSize(product.sizes[0]);
+    }
+  }, [product]);
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      showToast('Please select a size', 'warning');
+      return;
+    }
+    
+    const stock = product.stock?.[selectedSize] || 0;
+    if (stock < quantity) {
+      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
+      return;
+    }
+
+    addItem(product, selectedSize, quantity);
+    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
+    onClose();
+  };
+
+  const handleToggleWishlist = () => {
+    if (!user) {
+      showToast('Please login to add items to wishlist', 'warning');
+      return;
+    }
+    toggleWishlist(product);
+  };
+
+  if (!isOpen || !product) return null;
+
+  const discount = product.originalPrice && product.originalPrice > product.price 
+    ? Math.round((1 - product.price / product.originalPrice) * 100) 
+    : 0;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Quick View</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Media Gallery */}
+            <div>
+              <MediaGallery 
+                media={product.media || product.images || []} 
+                productName={product.name}
+              />
+            </div>
+
+            {/* Product Info */}
+            <div className="space-y-6">
+              <div>
+                <div className="text-sm text-purple-600 font-medium mb-2">{product.category}</div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        className={`${
+                          i < Math.floor(product.rating) 
+                            ? 'text-yellow-400 fill-current' 
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm text-gray-600">
+                      {product.rating} ({product.reviews?.length || 0} reviews)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 mb-6">
+                  <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <>
+                      <span className="text-lg text-gray-500 line-through">${product.originalPrice}</span>
+                      <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-medium">
+                        {discount}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="prose prose-sm prose-gray">
+                <p>{product.description}</p>
+              </div>
+
+              {/* Size Selection */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Size</h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {product.sizes.map((size: string) => {
+                      const stock = product.stock?.[size] || 0;
+                      const isAvailable = stock > 0;
+                      
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => isAvailable && setSelectedSize(size)}
+                          disabled={!isAvailable}
+                          className={`py-2 px-3 border rounded-lg font-medium transition-colors text-sm ${
+                            selectedSize === size
+                              ? 'border-purple-600 bg-purple-50 text-purple-600'
+                              : isAvailable
+                              ? 'border-gray-300 hover:border-gray-400'
+                              : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                          }`}
+                        >
+                          {size}
+                          {!isAvailable && <div className="text-xs">Out</div>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Quantity</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center border border-gray-300 rounded-lg">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="p-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span className="px-4 py-2 font-medium">{quantity}</span>
+                    <button
+                      onClick={() => {
+                        const maxStock = product.stock?.[selectedSize] || 0;
+                        setQuantity(Math.min(maxStock, quantity + 1));
+                      }}
+                      className="p-2 hover:bg-gray-100 transition-colors"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  {selectedSize && (
+                    <span className="text-sm text-gray-600">
+                      {product.stock?.[selectedSize] || 0} available
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                >
+                  <ShoppingCart size={20} />
+                  <span>Add to Cart</span>
+                </button>
+                
+                <button
+                  onClick={handleToggleWishlist}
+                  className={`w-full py-3 px-6 rounded-lg font-semibold border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
+                    isInWishlist(product._id)
+                      ? 'border-red-500 bg-red-50 text-red-600'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <Heart size={20} className={isInWishlist(product._id) ? 'fill-current' : ''} />
+                  <span>{isInWishlist(product._id) ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductQuickView;

@@ -3,7 +3,7 @@ import { Plus, Edit, Trash2, Search, Filter, Eye, Upload, X, Star, Package, Doll
 import AdminLayout from '../../components/admin/AdminLayout';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ImageUpload from '../../components/admin/ImageUpload';
+import MediaUpload from '../../components/admin/MediaUpload';
 
 const ProductManagement: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
@@ -27,7 +27,7 @@ const ProductManagement: React.FC = () => {
     gender: 'women' as 'men' | 'women' | 'unisex',
     sizes: [] as string[],
     colors: [] as string[],
-    images: [] as string[],
+    media: [] as string[],
     stock: {} as { [key: string]: number },
     featured: false,
     isActive: true,
@@ -97,8 +97,8 @@ const ProductManagement: React.FC = () => {
         return;
       }
 
-      if (formData.images.length === 0) {
-        alert('Please upload at least one image');
+      if (formData.media.length === 0) {
+        alert('Please upload at least one media file');
         return;
       }
 
@@ -145,7 +145,7 @@ const ProductManagement: React.FC = () => {
       gender: product.gender,
       sizes: product.sizes || [],
       colors: product.colors || [],
-      images: product.images || [],
+      media: product.media || [],
       stock: product.stock || {},
       featured: product.featured || false,
       isActive: product.isActive !== false,
@@ -188,7 +188,7 @@ const ProductManagement: React.FC = () => {
       gender: 'women',
       sizes: [],
       colors: [],
-      images: [],
+      media: [],
       stock: {},
       featured: false,
       isActive: true,
@@ -401,7 +401,7 @@ const ProductManagement: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <img
-                            src={product.images?.[0] || '/placeholder-image.jpg'}
+                            src={product.media?.[0] ? `/api/upload/media/${product.media[0]._id || product.media[0]}` : '/placeholder-image.jpg'}
                             alt={product.name}
                             className="w-12 h-12 object-cover rounded-lg mr-4"
                           />
@@ -539,15 +539,23 @@ const ProductManagement: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Product Images */}
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Product Images</h3>
+                    <h3 className="text-lg font-semibold mb-4">Product Media</h3>
                     <div className="grid grid-cols-2 gap-4">
-                      {viewingProduct.images?.map((image: string, index: number) => (
+                      {viewingProduct.media?.map((mediaItem: any, index: number) => (
                         <div key={index} className="relative">
-                          <img
-                            src={image}
-                            alt={`${viewingProduct.name} ${index + 1}`}
-                            className="w-full h-48 object-cover rounded-lg border"
-                          />
+                          {mediaItem.type === 'video' ? (
+                            <video
+                              src={`/api/upload/media/${mediaItem._id || mediaItem}`}
+                              className="w-full h-48 object-cover rounded-lg border"
+                              controls
+                            />
+                          ) : (
+                            <img
+                              src={`/api/upload/media/${mediaItem._id || mediaItem}`}
+                              alt={`${viewingProduct.name} ${index + 1}`}
+                              className="w-full h-48 object-cover rounded-lg border"
+                            />
+                          )}
                           <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs">
                             {index + 1}
                           </div>
@@ -773,7 +781,7 @@ const ProductManagement: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Pricing & Shipping</h3>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
+                        {viewingProduct.media?.map((mediaItem: any, index: number) => (
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Price *
                           </label>
@@ -861,11 +869,19 @@ const ProductManagement: React.FC = () => {
                               <input
                                 type="number"
                                 min="0"
-                                value={formData.stock[size] || 0}
-                                onChange={(e) => setFormData({
-                                  ...formData,
-                                  stock: { ...formData.stock, [size]: parseInt(e.target.value) || 0 }
-                                })}
+                            {mediaItem.type === 'video' ? (
+                              <video
+                                src={`/api/upload/media/${mediaItem._id || mediaItem}`}
+                                className="w-full h-48 object-cover rounded-lg border"
+                                controls
+                              />
+                            ) : (
+                              <img
+                                src={`/api/upload/media/${mediaItem._id || mediaItem}`}
+                                alt={`${viewingProduct.name} ${index + 1}`}
+                                className="w-full h-48 object-cover rounded-lg border"
+                              />
+                            )}
                                 className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-600"
                               />
                             </div>
@@ -948,15 +964,15 @@ const ProductManagement: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Images */}
+                {/* Media */}
                 <div>
                   <label className="block text-lg font-semibold text-gray-700 mb-4">
-                    Product Images *
+                    Product Media (Images & Videos) *
                   </label>
-                  <ImageUpload
-                    images={formData.images}
-                    onImagesChange={(images) => setFormData({ ...formData, images })}
-                    maxImages={10}
+                  <MediaUpload
+                    media={formData.media}
+                    onMediaChange={(media) => setFormData({ ...formData, media })}
+                    maxFiles={10}
                   />
                 </div>
 

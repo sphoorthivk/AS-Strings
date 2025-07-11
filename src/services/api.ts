@@ -89,20 +89,30 @@ export const categoriesAPI = {
 
 // Upload API
 export const uploadAPI = {
-  uploadImages: (formData: FormData) => api.post('/upload/images', formData, {
+  uploadMedia: (formData: FormData) => api.post('/upload/media', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
     timeout: 30000, // 30 second timeout for uploads
   }),
   
-  deleteImage: (imageId: string) => api.delete(`/upload/images/${imageId}`),
+  deleteMedia: (mediaId: string) => api.delete(`/upload/media/${mediaId}`),
   
-  getImage: (imageId: string) => api.get(`/upload/images/${imageId}`, {
+  getMedia: (mediaId: string) => api.get(`/upload/media/${mediaId}`, {
     responseType: 'blob'
   }),
   
-  getAllImages: (params?: any) => api.get('/upload/images', { params }),
+  getAllMedia: (params?: any) => api.get('/upload/media', { params }),
+  
+  // Legacy support for images
+  uploadImages: (formData: FormData) => api.post('/upload/media', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 30000,
+  }),
+  
+  deleteImage: (imageId: string) => api.delete(`/upload/media/${imageId}`),
 };
 
 // Wishlist API
