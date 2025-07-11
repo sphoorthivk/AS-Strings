@@ -105,19 +105,6 @@ export const uploadAPI = {
   getAllImages: (params?: any) => api.get('/upload/images', { params }),
 };
 
-// Wishlist API
-export const wishlistAPI = {
-  getWishlist: () => api.get('/wishlist'),
-  
-  addToWishlist: (productId: string) => api.post(`/wishlist/add/${productId}`),
-  
-  removeFromWishlist: (productId: string) => api.delete(`/wishlist/remove/${productId}`),
-  
-  toggleWishlist: (productId: string) => api.post(`/wishlist/toggle/${productId}`),
-  
-  checkWishlist: (productId: string) => api.get(`/wishlist/check/${productId}`),
-};
-
 // Add request interceptor for debugging
 api.interceptors.request.use((config) => {
   const token = Cookies.get('token');

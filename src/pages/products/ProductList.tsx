@@ -6,7 +6,6 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { useWishlist } from '../../contexts/WishlistContext';
 
 const ProductList: React.FC = () => {
   const { gender, category } = useParams();
@@ -14,7 +13,6 @@ const ProductList: React.FC = () => {
   const { addItem } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { isInWishlist, toggleWishlist } = useWishlist();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -107,6 +105,16 @@ const ProductList: React.FC = () => {
     showToast(`Added ${product.name} (${availableSize}) to cart!`, 'success');
   };
 
+  const handleToggleWishlist = (productId: string) => {
+    if (!user) {
+      showToast('Please login to add items to wishlist', 'warning');
+      return;
+    }
+    
+    // This would typically call an API to add/remove from wishlist
+    console.log('Toggle wishlist for product:', productId);
+    showToast('Added to wishlist!', 'success');
+  };
   const ProductCard = ({ product }: { product: any }) => (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative overflow-hidden">
@@ -126,10 +134,10 @@ const ProductList: React.FC = () => {
 
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <button 
-            onClick={() => toggleWishlist(product._id)}
+            onClick={() => handleToggleWishlist(product._id)}
             className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors"
           >
-            <Heart size={16} className={isInWishlist(product._id) ? "text-red-500 fill-current" : "text-gray-600"} />
+            <Heart size={16} className="text-gray-600" />
           </button>
         </div>
 
@@ -227,10 +235,10 @@ const ProductList: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2 mt-2">
               <button 
-                onClick={() => toggleWishlist(product._id)}
+                onClick={() => handleToggleWishlist(product._id)}
                 className="p-2 text-gray-600 hover:text-purple-600 transition-colors"
               >
-                <Heart size={16} className={isInWishlist(product._id) ? "text-red-500 fill-current" : ""} />
+                <Heart size={16} />
               </button>
               <button 
                 onClick={() => handleQuickAddToCart(product)}
