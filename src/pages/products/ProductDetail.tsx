@@ -5,6 +5,7 @@ import { productsAPI } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ImageGallery from '../../components/common/ImageGallery';
 
@@ -14,11 +15,11 @@ const ProductDetail: React.FC = () => {
   const { addItem } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({ rating: 5, comment: '' });
 
@@ -221,15 +222,15 @@ const ProductDetail: React.FC = () => {
             </button>
             
             <button
-              onClick={() => setIsWishlisted(!isWishlisted)}
+              onClick={() => toggleWishlist(product._id)}
               className={`w-full py-4 px-6 rounded-lg font-semibold border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
-                isWishlisted
+                isInWishlist(product._id)
                   ? 'border-red-500 bg-red-50 text-red-600'
                   : 'border-gray-300 hover:border-gray-400'
               }`}
             >
-              <Heart size={20} className={isWishlisted ? 'fill-current' : ''} />
-              <span>{isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+              <Heart size={20} className={isInWishlist(product._id) ? 'fill-current' : ''} />
+              <span>{isInWishlist(product._id) ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
             </button>
           </div>
 

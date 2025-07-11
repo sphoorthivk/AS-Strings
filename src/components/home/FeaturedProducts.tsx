@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { useWishlist } from '../../contexts/WishlistContext';
 
 const FeaturedProducts: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -66,8 +68,11 @@ const FeaturedProducts: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors mb-2">
-                      <Heart size={16} className="text-gray-600" />
+                    <button 
+                      onClick={() => toggleWishlist(product._id)}
+                      className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors mb-2"
+                    >
+                      <Heart size={16} className={isInWishlist(product._id) ? "text-red-500 fill-current" : "text-gray-600"} />
                     </button>
                   </div>
 
