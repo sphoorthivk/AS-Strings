@@ -181,6 +181,7 @@ const Header: React.FC = () => {
               </form>
 
               <Link to="/wishlist" className="flex items-center space-x-2 py-2 text-gray-700 hover:text-purple-600 transition-colors">
+              </Link>
 
               <Link to="/cart" className="flex items-center space-x-2 py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 <ShoppingCart size={20} />
