@@ -1,9 +1,15 @@
 import React from 'react';
-import SimpleLanding from '../components/home/SimpleLanding';
+import Hero from '../components/home/Hero';
+import FeaturedProducts from '../components/home/FeaturedProducts';
+import CategorySection from '../components/home/CategorySection';
 
 const Home: React.FC = () => {
   return (
-    <SimpleLanding />
+    <div>
+      <Hero />
+      <FeaturedProducts />
+      <CategorySection />
+    </div>
   );
 };
 
