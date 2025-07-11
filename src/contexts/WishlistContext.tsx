@@ -61,7 +61,14 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     try {
       if (user) {
         await wishlistAPI.addToWishlist(product._id);
-        await fetchWishlist();
+        setItems(prev => {
+          const existingItem = prev.find(item => item._id === product._id);
+          if (!existingItem) {
+            showToast('Added to wishlist!', 'success');
+            return [...prev, product];
+          }
+          return prev;
+        });
       } else {
         // Handle local storage for non-authenticated users
         const existingItem = items.find(item => item._id === product._id);
@@ -71,7 +78,8 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         }
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error adding to wishlist';
+      console.error('Wishlist add error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Error adding to wishlist';
       showToast(errorMessage, 'error');
     }
   };
@@ -80,14 +88,19 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
     try {
       if (user) {
         await wishlistAPI.removeFromWishlist(productId);
-        await fetchWishlist();
+        setItems(prev => {
+          const filtered = prev.filter(item => item._id !== productId);
+          showToast('Removed from wishlist', 'info');
+          return filtered;
+        });
       } else {
         // Handle local storage for non-authenticated users
         setItems(prev => prev.filter(item => item._id !== productId));
         showToast('Removed from wishlist', 'info');
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Error removing from wishlist';
+      console.error('Wishlist remove error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Error removing from wishlist';
       showToast(errorMessage, 'error');
     }
   };

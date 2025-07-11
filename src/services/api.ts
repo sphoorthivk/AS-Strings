@@ -119,9 +119,15 @@ export const uploadAPI = {
 export const wishlistAPI = {
   getWishlist: () => api.get('/wishlist'),
   
-  addToWishlist: (productId: string) => api.post('/wishlist', { productId }),
+  addToWishlist: (productId: string) => {
+    console.log('Adding to wishlist:', productId);
+    return api.post('/wishlist', { productId });
+  },
   
-  removeFromWishlist: (productId: string) => api.delete(`/wishlist/${productId}`),
+  removeFromWishlist: (productId: string) => {
+    console.log('Removing from wishlist:', productId);
+    return api.delete(`/wishlist/${productId}`);
+  },
   
   clearWishlist: () => api.delete('/wishlist'),
 };

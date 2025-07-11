@@ -19,10 +19,13 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     const { productId } = req.body;
+    
+    console.log('Add to wishlist request:', { userId: req.user._id, productId });
 
     // Check if product exists
     const product = await Product.findById(productId);
     if (!product) {
+      console.log('Product not found:', productId);
       return res.status(404).json({ message: 'Product not found' });
     }
 
@@ -30,14 +33,18 @@ router.post('/', auth, async (req, res) => {
     
     // Check if product is already in wishlist
     if (user.wishlist.includes(productId)) {
+      console.log('Product already in wishlist');
       return res.status(400).json({ message: 'Product already in wishlist' });
     }
 
     user.wishlist.push(productId);
     await user.save();
+    
+    console.log('Product added to wishlist successfully');
 
     res.status(201).json({ message: 'Product added to wishlist' });
   } catch (error) {
+    console.error('Wishlist add error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
