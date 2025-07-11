@@ -23,10 +23,6 @@ import OrderManagement from './pages/admin/OrderManagement';
 import UserManagement from './pages/admin/UserManagement';
 import Analytics from './pages/admin/Analytics';
 import Wishlist from './pages/wishlist/Wishlist';
-import SearchResults from './pages/search/SearchResults';
-import Profile from './pages/profile/Profile';
-import Reports from './pages/admin/Reports';
-import Settings from './pages/admin/Settings';
 
 function App() {
   return (
@@ -48,10 +44,9 @@ function App() {
                   <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/order/:orderId" element={<OrderDetail />} />
-                  <Route path="/profile" element={<Profile />} />
                   <Route path="/products/:gender?" element={<ProductList />} />
                   <Route path="/products/:gender/:category" element={<ProductList />} />
-                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/search" element={<ProductList />} />
                   <Route path="/about" element={<div className="container mx-auto px-4 py-16"><h1 className="text-3xl font-bold text-center">About Us</h1></div>} />
                   <Route path="/contact" element={<div className="container mx-auto px-4 py-16"><h1 className="text-3xl font-bold text-center">Contact Us</h1></div>} />
                   <Route path="/admin" element={<Dashboard />} />
@@ -61,8 +56,6 @@ function App() {
                   <Route path="/admin/analytics" element={<Analytics />} />
                   <Route path="/admin/categories" element={<CategoryManagement />} />
                   <Route path="/admin/delivery-zones" element={<DeliveryZoneManagement />} />
-                  <Route path="/admin/reports" element={<Reports />} />
-                  <Route path="/admin/settings" element={<Settings />} />
                 </Routes>
               </Layout>
             </Router>

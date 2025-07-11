@@ -3,18 +3,10 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useWishlist } from '../../contexts/WishlistContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useCart } from '../../contexts/CartContext';
 
 const FeaturedProducts: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toggleItem: toggleWishlist, isInWishlist } = useWishlist();
-  const { addItem: addToCart } = useCart();
-  const { user } = useAuth();
-  const { showToast } = useToast();
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -29,30 +21,6 @@ const FeaturedProducts: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleToggleWishlist = (product: any) => {
-    if (!user) {
-      showToast('Please login to add items to wishlist', 'warning');
-      return;
-    }
-    toggleWishlist(product);
-  };
-
-  const handleQuickAddToCart = (product: any) => {
-    // For quick add, use the first available size
-    const availableSize = product.sizes?.find((size: string) => {
-      const stock = product.stock?.[size] || 0;
-      return stock > 0;
-    });
-    
-    if (!availableSize) {
-      showToast('This product is out of stock', 'error');
-      return;
-    }
-    
-    addToCart(product, availableSize, 1);
-    showToast(`Added ${product.name} (${availableSize}) to cart!`, 'success');
   };
 
   return (
@@ -98,24 +66,14 @@ const FeaturedProducts: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button 
-                      onClick={() => handleToggleWishlist(product)}
-                      className={`p-2 rounded-full shadow-md transition-colors mb-2 ${
-                        isInWishlist(product._id)
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                          : 'bg-white text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Heart size={16} className={isInWishlist(product._id) ? 'fill-current' : ''} />
+                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors mb-2">
+                      <Heart size={16} className="text-gray-600" />
                     </button>
                   </div>
 
                   {/* Quick Add Button */}
                   <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button 
-                      onClick={() => handleQuickAddToCart(product)}
-                      className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
-                    >
+                    <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2">
                       <ShoppingCart size={16} />
                       <span>Quick Add</span>
                     </button>

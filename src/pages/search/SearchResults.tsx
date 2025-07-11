@@ -1,25 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Search, Filter, Grid, List, Package, Heart, ShoppingCart, Star } from 'lucide-react';
+import { Search, Filter, Grid, List, Package } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { useWishlist } from '../../contexts/WishlistContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
-import { useCart } from '../../contexts/CartContext';
 
 const SearchResults: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const { toggleItem: toggleWishlist, isInWishlist } = useWishlist();
-  const { addItem: addToCart } = useCart();
-  const { user } = useAuth();
-  const { showToast } = useToast();
 
   const searchQuery = searchParams.get('q') || '';
 
@@ -47,29 +39,6 @@ const SearchResults: React.FC = () => {
     }
   };
 
-  const handleToggleWishlist = (product: any) => {
-    if (!user) {
-      showToast('Please login to add items to wishlist', 'warning');
-      return;
-    }
-    toggleWishlist(product);
-  };
-
-  const handleQuickAddToCart = (product: any) => {
-    const availableSize = product.sizes?.find((size: string) => {
-      const stock = product.stock?.[size] || 0;
-      return stock > 0;
-    });
-    
-    if (!availableSize) {
-      showToast('This product is out of stock', 'error');
-      return;
-    }
-    
-    addToCart(product, availableSize, 1);
-    showToast(`Added ${product.name} (${availableSize}) to cart!`, 'success');
-  };
-
   const ProductCard = ({ product }: { product: any }) => (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative overflow-hidden">
@@ -86,29 +55,6 @@ const SearchResults: React.FC = () => {
             </span>
           )}
         </div>
-
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button 
-            onClick={() => handleToggleWishlist(product)}
-            className={`p-2 rounded-full shadow-md transition-colors mb-2 ${
-              isInWishlist(product._id)
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-white text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <Heart size={16} className={isInWishlist(product._id) ? 'fill-current' : ''} />
-          </button>
-        </div>
-
-        <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button 
-            onClick={() => handleQuickAddToCart(product)}
-            className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
-          >
-            <ShoppingCart size={16} />
-            <span>Quick Add</span>
-          </button>
-        </div>
       </div>
 
       <div className="p-6">
@@ -119,26 +65,9 @@ const SearchResults: React.FC = () => {
           </h3>
         </Link>
         
-        <div className="flex items-center mt-2 mb-3">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={14}
-                className={`${
-                  i < Math.floor(product.rating) 
-                    ? 'text-yellow-400 fill-current' 
-                    : 'text-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-sm text-gray-600 ml-2">({product.reviews?.length || 0})</span>
-        </div>
-        
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-4">
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-gray-800">${product.price}</span>
+            <span className="text-xl font-bold text-gray-800">${product.price}</span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-sm text-gray-500 line-through">${product.originalPrice}</span>
             )}
