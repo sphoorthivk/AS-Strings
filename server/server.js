@@ -14,7 +14,6 @@ import orderRoutes from './routes/orders.js';
 import categoryRoutes from './routes/categories.js';
 import uploadRoutes from './routes/upload.js';
 import wishlistRoutes from './routes/wishlist.js';
-import wishlistRoutes from './routes/wishlist.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
