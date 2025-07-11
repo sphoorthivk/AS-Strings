@@ -426,7 +426,8 @@ const ProductManagement: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {Object.values(product.stock || {}).reduce((a: number, b: number) => a + b, 0)}
+                        {Object.entries(product.stock || {}).reduce((a: number, [, b]) => a + Number(b), 0)}
+
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">

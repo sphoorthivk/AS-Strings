@@ -264,20 +264,20 @@ router.put('/:id', adminAuth, async (req, res) => {
 router.delete('/:id', adminAuth, async (req, res) => {
   try {
     // Get product to find associated images
-    const product = await Product.findById(req.params.id);
-    if (!product) {
+    const products = await Product.findById(req.params.id);
+    if (!products) {
       return res.status(404).json({ message: 'Product not found' });
     }
     
     // Delete associated images
-    if (product.images && product.images.length > 0) {
-      await Image.deleteMany({ _id: { $in: product.images } });
+    if (products.images && products.images.length > 0) {
+      await Image.deleteMany({ _id: { $in: products.images } });
     }
     
     // Delete the product
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const products1 = await Product.findByIdAndDelete(req.params.id);
     
-    if (!product) {
+    if (!products1) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
