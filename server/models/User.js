@@ -34,7 +34,11 @@ const userSchema = new mongoose.Schema({
     state: String,
     zipCode: String,
     country: String
-  }
+  },
+  wishlist: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product'
+  }]
 }, {
   timestamps: true
 });

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Star, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ImageGallery from '../../components/common/ImageGallery';
 
@@ -14,6 +15,7 @@ const ProductDetail: React.FC = () => {
   const { addItem } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { toggleItem: toggleWishlist, isInWishlist } = useWishlist();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState('');
@@ -59,6 +61,13 @@ const ProductDetail: React.FC = () => {
     showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
   };
 
+  const handleToggleWishlist = () => {
+    if (!user) {
+      showToast('Please login to add items to wishlist', 'warning');
+      return;
+    }
+    toggleWishlist(product);
+  };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,6 +229,17 @@ const ProductDetail: React.FC = () => {
               <span>Add to Cart</span>
             </button>
             
+            <button
+              onClick={handleToggleWishlist}
+              className={`w-full py-4 px-6 rounded-lg font-semibold border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
+                isInWishlist(product._id)
+                  ? 'border-red-500 bg-red-50 text-red-600'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              <Heart size={20} className={isInWishlist(product._id) ? 'fill-current' : ''} />
+              <span>{isInWishlist(product._id) ? 'Remove from Wishlist' : 'Add to Wishlist'}</span>
+            </button>
           </div>
 
           {/* Product Features */}
