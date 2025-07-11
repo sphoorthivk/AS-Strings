@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star } from 'lucide-react';
 import { productsAPI } from '../../services/api';
 import LoadingSpinner from '../common/LoadingSpinner';
 
@@ -65,11 +65,6 @@ const FeaturedProducts: React.FC = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100 transition-colors mb-2">
-                      <Heart size={16} className="text-gray-600" />
-                    </button>
-                  </div>
 
                   {/* Quick Add Button */}
                   <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

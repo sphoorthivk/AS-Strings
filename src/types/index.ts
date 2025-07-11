@@ -77,15 +77,3 @@ export interface CartContextType {
   totalItems: number;
   totalPrice: number;
 }
-
-export interface WishlistContextType {
-  items: Product[];
-  loading: boolean;
-  addItem: (product: Product) => Promise<void>;
-  removeItem: (productId: string) => Promise<void>;
-  toggleItem: (product: Product) => Promise<void>;
-  clearWishlist: () => Promise<void>;
-  isInWishlist: (productId: string) => boolean;
-  moveToCart: (productId: string) => void;
-  totalItems: number;
-}
