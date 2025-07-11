@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import { useWishlist } from '../../contexts/WishlistContext';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,6 +11,7 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
+  const { totalItems: wishlistItems } = useWishlist();
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -82,8 +84,13 @@ const Header: React.FC = () => {
             </div>
 
             {/* Wishlist */}
-            <Link to="/wishlist" className="p-2 text-gray-700 hover:text-purple-600 transition-colors">
+            <Link to="/wishlist" className="p-2 text-gray-700 hover:text-purple-600 transition-colors relative">
               <Heart size={20} />
+              {wishlistItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1">
+                  {wishlistItems}
+                </span>
+              )}
             </Link>
 
             {/* Cart */}
@@ -186,7 +193,7 @@ const Header: React.FC = () => {
 
               <Link to="/wishlist" className="flex items-center space-x-2 py-2 text-gray-700 hover:text-purple-600 transition-colors">
                 <Heart size={20} />
-                <span>Wishlist</span>
+                <span>Wishlist {wishlistItems > 0 && `(${wishlistItems})`}</span>
               </Link>
 
               <Link to="/cart" className="flex items-center space-x-2 py-2 text-gray-700 hover:text-purple-600 transition-colors">
