@@ -99,26 +99,27 @@ const ProductDetail: React.FC = () => {
     : 0;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
         {/* Product Images */}
         <ImageGallery 
           images={product.images} 
           productName={product.name}
+          className="w-full"
         />
 
         {/* Product Info */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <div>
-            <div className="text-sm text-purple-600 font-medium mb-2">{product.category}</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+            <div className="text-sm md:text-base text-purple-600 font-medium mb-2">{product.category}</div>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
             
-            <div className="flex items-center space-x-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    size={20}
+                    size={18}
                     className={`${
                       i < Math.floor(product.rating) 
                         ? 'text-yellow-400 fill-current' 
@@ -126,34 +127,34 @@ const ProductDetail: React.FC = () => {
                     }`}
                   />
                 ))}
-                <span className="ml-2 text-sm text-gray-600">
+                <span className="ml-2 text-sm md:text-base text-gray-600">
                   {product.rating} ({product.reviews?.length || 0} reviews)
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4 mb-6">
-              <span className="text-3xl font-bold text-gray-900">${product.price}</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-6">
+              <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">${product.price}</span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <>
-                  <span className="text-xl text-gray-500 line-through">${product.originalPrice}</span>
-                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg md:text-xl text-gray-500 line-through">${product.originalPrice}</span>
+                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm md:text-base font-medium">
                     {discount}% OFF
                   </span>
-                </>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="prose prose-gray">
-            <p>{product.description}</p>
+          <div className="prose prose-gray max-w-none">
+            <p className="text-sm md:text-base text-gray-700 leading-relaxed">{product.description}</p>
           </div>
 
           {/* Size Selection */}
           {product.sizes && product.sizes.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold mb-3">Size</h3>
-              <div className="grid grid-cols-4 gap-3">
+              <h3 className="text-base md:text-lg font-semibold mb-3">Size</h3>
+              <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-4 gap-2 md:gap-3">
                 {product.sizes.map((size: string) => {
                   const stock = product.stock?.[size] || 0;
                   const isAvailable = stock > 0;
@@ -163,7 +164,7 @@ const ProductDetail: React.FC = () => {
                       key={size}
                       onClick={() => isAvailable && setSelectedSize(size)}
                       disabled={!isAvailable}
-                      className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
+                      className={`py-3 px-2 md:px-4 border rounded-lg font-medium transition-colors touch-manipulation text-sm md:text-base ${
                         selectedSize === size
                           ? 'border-purple-600 bg-purple-50 text-purple-600'
                           : isAvailable
@@ -172,7 +173,7 @@ const ProductDetail: React.FC = () => {
                       }`}
                     >
                       {size}
-                      {!isAvailable && <div className="text-xs">Out of Stock</div>}
+                      {!isAvailable && <div className="text-xs mt-1">Out of Stock</div>}
                     </button>
                   );
                 })}
@@ -182,28 +183,30 @@ const ProductDetail: React.FC = () => {
 
           {/* Quantity */}
           <div>
-            <h3 className="text-lg font-semibold mb-3">Quantity</h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center border border-gray-300 rounded-lg">
+            <h3 className="text-base md:text-lg font-semibold mb-3">Quantity</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-3 sm:space-y-0">
+              <div className="flex items-center border border-gray-300 rounded-lg w-fit">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-2 hover:bg-gray-100 transition-colors"
+                  className="p-3 md:p-4 hover:bg-gray-100 transition-colors touch-manipulation"
+                  aria-label="Decrease quantity"
                 >
                   <Minus size={16} />
                 </button>
-                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <span className="px-4 py-3 md:py-4 font-medium min-w-12 text-center">{quantity}</span>
                 <button
                   onClick={() => {
                     const maxStock = product.stock?.[selectedSize] || 0;
                     setQuantity(Math.min(maxStock, quantity + 1));
                   }}
-                  className="p-2 hover:bg-gray-100 transition-colors"
+                  className="p-3 md:p-4 hover:bg-gray-100 transition-colors touch-manipulation"
+                  aria-label="Increase quantity"
                 >
                   <Plus size={16} />
                 </button>
               </div>
               {selectedSize && (
-                <span className="text-sm text-gray-600">
+                <span className="text-sm md:text-base text-gray-600">
                   {product.stock?.[selectedSize] || 0} available
                 </span>
               )}
@@ -211,10 +214,10 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <button
               onClick={handleAddToCart}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 md:py-5 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2 touch-manipulation text-base md:text-lg"
             >
               <ShoppingCart size={20} />
               <span>Add to Cart</span>
@@ -224,26 +227,26 @@ const ProductDetail: React.FC = () => {
 
           {/* Product Features */}
           <div className="border-t pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <div className="flex items-center space-x-3">
-                <Truck className="text-purple-600" size={24} />
+                <Truck className="text-purple-600 flex-shrink-0" size={20} />
                 <div>
-                  <div className="font-medium">Free Shipping</div>
-                  <div className="text-sm text-gray-600">On orders over $100</div>
+                  <div className="font-medium text-sm md:text-base">Free Shipping</div>
+                  <div className="text-xs md:text-sm text-gray-600">On orders over $100</div>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <RotateCcw className="text-purple-600" size={24} />
+                <RotateCcw className="text-purple-600 flex-shrink-0" size={20} />
                 <div>
-                  <div className="font-medium">Easy Returns</div>
-                  <div className="text-sm text-gray-600">30-day return policy</div>
+                  <div className="font-medium text-sm md:text-base">Easy Returns</div>
+                  <div className="text-xs md:text-sm text-gray-600">30-day return policy</div>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <Shield className="text-purple-600" size={24} />
+                <Shield className="text-purple-600 flex-shrink-0" size={20} />
                 <div>
-                  <div className="font-medium">Secure Payment</div>
-                  <div className="text-sm text-gray-600">100% secure checkout</div>
+                  <div className="font-medium text-sm md:text-base">Secure Payment</div>
+                  <div className="text-xs md:text-sm text-gray-600">100% secure checkout</div>
                 </div>
               </div>
             </div>
@@ -252,13 +255,13 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Reviews Section */}
-      <div className="mt-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Customer Reviews</h2>
+      <div className="mt-12 md:mt-16">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 md:mb-8 space-y-4 sm:space-y-0">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Customer Reviews</h2>
           {user && (
             <button
               onClick={() => setShowReviewForm(!showReviewForm)}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium touch-manipulation w-fit"
             >
               Write a Review
             </button>
@@ -267,16 +270,17 @@ const ProductDetail: React.FC = () => {
 
         {/* Review Form */}
         {showReviewForm && (
-          <form onSubmit={handleSubmitReview} className="bg-gray-50 p-6 rounded-lg mb-8">
+          <form onSubmit={handleSubmitReview} className="bg-gray-50 p-4 md:p-6 rounded-lg mb-6 md:mb-8">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+              <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">Rating</label>
               <div className="flex items-center space-x-2">
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
                     type="button"
                     onClick={() => setReviewData({ ...reviewData, rating })}
-                    className="text-2xl"
+                    className="text-2xl md:text-3xl touch-manipulation p-1"
+                    aria-label={`Rate ${rating} stars`}
                   >
                     <Star
                       className={`${
@@ -291,27 +295,27 @@ const ProductDetail: React.FC = () => {
             </div>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+              <label className="block text-sm md:text-base font-medium text-gray-700 mb-2">Comment</label>
               <textarea
                 value={reviewData.comment}
                 onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base resize-none"
                 rows={4}
                 placeholder="Share your experience with this product..."
               />
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <button
                 type="submit"
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium touch-manipulation"
               >
                 Submit Review
               </button>
               <button
                 type="button"
                 onClick={() => setShowReviewForm(false)}
-                className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium touch-manipulation"
               >
                 Cancel
               </button>
@@ -320,24 +324,24 @@ const ProductDetail: React.FC = () => {
         )}
 
         {/* Reviews List */}
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {product.reviews && product.reviews.length > 0 ? (
             product.reviews.map((review: any, index: number) => (
-              <div key={index} className="border-b border-gray-200 pb-6">
-                <div className="flex items-center justify-between mb-3">
+              <div key={index} className="border-b border-gray-200 pb-4 md:pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-medium text-sm">
                         {review.user?.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>
                     <div>
-                      <div className="font-medium">{review.user?.name || 'Anonymous'}</div>
+                      <div className="font-medium text-sm md:text-base">{review.user?.name || 'Anonymous'}</div>
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            size={14}
+                            size={12}
                             className={`${
                               i < review.rating
                                 ? 'text-yellow-400 fill-current'
@@ -348,15 +352,15 @@ const ProductDetail: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-xs md:text-sm text-gray-500">
                     {new Date(review.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <p className="text-gray-700">{review.comment}</p>
+                <p className="text-sm md:text-base text-gray-700 leading-relaxed">{review.comment}</p>
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
+            <p className="text-gray-500 text-center py-6 md:py-8 text-sm md:text-base">No reviews yet. Be the first to review this product!</p>
           )}
         </div>
       </div>
