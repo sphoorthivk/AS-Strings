@@ -77,7 +77,7 @@ const ProductList: React.FC = () => {
     }
   };
 
-  const availableCategories = ['All', ...categories.map(cat => cat.name)];
+  const availableCategories = ['All', ...categories.filter(cat => cat.isActive).map(cat => cat.name)];
   const genderOptions = ['All', 'women', 'men', 'unisex'];
   const priceRanges = ['All', '$0-$50', '$50-$100', '$100-$200', '$200+'];
   const sizes = ['All', 'XS', 'S', 'M', 'L', 'XL', 'XXL'];

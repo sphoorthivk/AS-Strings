@@ -718,17 +718,24 @@ const ProductManagement: React.FC = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Category *
                             </label>
-                            <select
-                              required
-                              value={formData.category}
-                              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                            >
-                              <option value="">Select Category</option>
-                              {categories.map(category => (
-                                <option key={category._id} value={category.name}>{category.name}</option>
-                              ))}
-                            </select>
+                            <div className="space-y-2">
+                              <select
+                                required
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                              >
+                                <option value="">Select Category</option>
+                                {categories.map(category => (
+                                  <option key={category._id} value={category.name}>{category.name}</option>
+                                ))}
+                              </select>
+                              {categories.length === 0 && (
+                                <p className="text-sm text-amber-600">
+                                  No categories available. Please create categories first in the Categories section.
+                                </p>
+                              )}
+                            </div>
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">

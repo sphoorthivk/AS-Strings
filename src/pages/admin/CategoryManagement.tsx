@@ -359,6 +359,9 @@ const CategoryManagement: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-1">
                     Choose a clear, descriptive name for your category
                   </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    💡 Tip: Categories created here will be available for product creation
+                  </p>
                 </div>
 
                 <div>
