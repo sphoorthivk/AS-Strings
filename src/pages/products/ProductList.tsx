@@ -240,37 +240,9 @@ const ProductList: React.FC = () => {
       
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters Sidebar */}
-        <div className={`lg:w-1/4 transition-all duration-300 ease-in-out ${
-          showFilters 
-            ? 'fixed inset-0 z-40 bg-black bg-opacity-50 lg:relative lg:bg-transparent lg:z-auto' 
-            : 'hidden lg:block'
-        }`}>
-          {/* Mobile overlay */}
-          {showFilters && (
-            <div 
-              className="lg:hidden absolute inset-0" 
-              onClick={() => setShowFilters(false)}
-            />
-          )}
-          
-          <div className={`bg-white rounded-lg shadow-md p-6 lg:sticky lg:top-24 ${
-            showFilters 
-              ? 'fixed top-0 right-0 h-full w-80 max-w-[90vw] overflow-y-auto z-50 transform translate-x-0 transition-transform duration-300' 
-              : 'lg:block'
-          }`}>
-            {/* Mobile close button */}
-            <div className="lg:hidden flex items-center justify-between mb-4 pb-4 border-b">
-              <h3 className="text-lg font-semibold">Filters</h3>
-              <button
-                onClick={() => setShowFilters(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Close filters"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <h3 className="hidden lg:block text-lg font-semibold mb-4">Filters</h3>
+        <div className={`lg:w-1/4 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+          <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
+            <h3 className="text-lg font-semibold mb-4">Filters</h3>
             
             <div className="space-y-6">
               <div>
@@ -351,9 +323,8 @@ const ProductList: React.FC = () => {
                     sortBy: 'newest',
                   });
                   setCurrentPage(1);
-                  setShowFilters(false);
                 }}
-                className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Clear All Filters
               </button>
@@ -366,52 +337,50 @@ const ProductList: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
+              <h1 className="text-2xl font-bold text-gray-800">
                 {gender && gender !== 'all' ? `${gender.charAt(0).toUpperCase() + gender.slice(1)}'s ` : ''}
                 {category && category !== 'all' ? category : 'All Products'}
               </h1>
-              <p className="text-sm md:text-base text-gray-600">Showing {products.length} products</p>
+              <p className="text-gray-600">Showing {products.length} products</p>
             </div>
             
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden flex items-center space-x-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors touch-manipulation"
+                className="lg:hidden flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <Filter size={16} />
-                <span className="hidden sm:inline">Filters</span>
+                <span>Filters</span>
               </button>
               
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
-                className="p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm md:text-base min-w-0"
+                className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
               >
                 {sortOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
               
-              <div className="hidden md:flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 md:p-3 rounded-lg transition-colors touch-manipulation ${
+                  className={`p-2 rounded-lg transition-colors ${
                     viewMode === 'grid' 
                       ? 'bg-purple-600 text-white' 
                       : 'bg-white text-gray-600 hover:bg-gray-100'
                   }`}
-                  aria-label="Grid view"
                 >
                   <Grid size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 md:p-3 rounded-lg transition-colors touch-manipulation ${
+                  className={`p-2 rounded-lg transition-colors ${
                     viewMode === 'list' 
                       ? 'bg-purple-600 text-white' 
                       : 'bg-white text-gray-600 hover:bg-gray-100'
                   }`}
-                  aria-label="List view"
                 >
                   <List size={16} />
                 </button>
@@ -423,13 +392,13 @@ const ProductList: React.FC = () => {
           {!loading && (
             <>
               {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {products.map(product => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-4">
                   {products.map(product => (
                     <ProductListItem key={product._id} product={product} />
                   ))}
@@ -437,10 +406,10 @@ const ProductList: React.FC = () => {
               )}
 
               {products.length === 0 && !loading && (
-                <div className="text-center py-12 md:py-16">
+                <div className="text-center py-16">
                   <Package size={64} className="mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-4">No products found</h2>
-                  <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">Try adjusting your filters or search terms.</p>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">No products found</h2>
+                  <p className="text-gray-600 mb-8">Try adjusting your filters or search terms.</p>
                   <button
                     onClick={() => {
                       setFilters({
@@ -453,7 +422,7 @@ const ProductList: React.FC = () => {
                       });
                       setCurrentPage(1);
                     }}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium touch-manipulation"
+                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
                   >
                     Clear Filters
                   </button>
@@ -464,12 +433,12 @@ const ProductList: React.FC = () => {
 
           {/* Pagination */}
           {!loading && totalPages > 1 && (
-            <div className="flex justify-center mt-8 md:mt-12">
+            <div className="flex justify-center mt-12">
               <nav className="flex items-center space-x-2">
                 <button 
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 touch-manipulation text-sm md:text-base"
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                 >
                   Previous
                 </button>
@@ -479,7 +448,7 @@ const ProductList: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 md:px-4 md:py-3 rounded-lg transition-colors touch-manipulation text-sm md:text-base ${
+                      className={`px-3 py-2 rounded-lg transition-colors ${
                         page === currentPage 
                           ? 'bg-purple-600 text-white' 
                           : 'border border-gray-300 hover:bg-gray-100'
@@ -492,7 +461,7 @@ const ProductList: React.FC = () => {
                 <button 
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 touch-manipulation text-sm md:text-base"
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                 >
                   Next
                 </button>
