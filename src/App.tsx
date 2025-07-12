@@ -17,6 +17,7 @@ import MyOrders from './pages/orders/MyOrders';
 import OrderDetail from './pages/orders/OrderDetail';
 import CategoryManagement from './pages/admin/CategoryManagement';
 import DeliveryZoneManagement from './pages/admin/DeliveryZoneManagement';
+import Profile from './pages/profile/Profile';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManagement from './pages/admin/ProductManagement';
 import OrderManagement from './pages/admin/OrderManagement';
@@ -44,6 +45,7 @@ function App() {
                   <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/order/:orderId" element={<OrderDetail />} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path="/products/:gender?" element={<ProductList />} />
                   <Route path="/products/:gender/:category" element={<ProductList />} />
                   <Route path="/search" element={<ProductList />} />

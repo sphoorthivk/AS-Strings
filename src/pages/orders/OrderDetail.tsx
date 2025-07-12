@@ -172,6 +172,12 @@ const OrderDetail: React.FC = () => {
                     <span className="text-sm text-gray-600">Size: {item.size}</span>
                     <span className="text-sm text-gray-600">Quantity: {item.quantity}</span>
                   </div>
+                  {order.trackingNumber && (
+                    <div className="flex justify-between">
+                      <span>Tracking Number:</span>
+                      <span className="font-medium text-purple-600">{order.trackingNumber}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="font-medium text-lg">${(item.price * item.quantity).toFixed(2)}</p>
