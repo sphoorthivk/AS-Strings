@@ -93,6 +93,35 @@ const ProductList: React.FC = () => {
     { value: 'rating', label: 'Highest Rated' },
   ];
 
+  const getProductImageUrl = (product: any) => {
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+  };
+
   const handleQuickAddToCart = (product: any) => {
     // For quick add, use the first available size
     const availableSize = product.sizes?.find((size: string) => {
@@ -124,9 +153,13 @@ const ProductList: React.FC = () => {
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative overflow-hidden">
         <img
-          src={product.media?.[0] ? `/api/upload/media/${product.media[0]._id || product.media[0]}` : product.images?.[0] || '/placeholder.jpg'}
+          src={getProductImageUrl(product)}
           alt={product.name}
           className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+          }}
         />
         
         <div className="absolute top-3 left-3">
@@ -210,9 +243,13 @@ const ProductList: React.FC = () => {
     <div className="bg-white rounded-lg shadow-md p-6 flex items-center space-x-6">
       <div className="flex-shrink-0">
         <img
-          src={product.media?.[0] ? `/api/upload/media/${product.media[0]._id || product.media[0]}` : product.images?.[0] || '/placeholder.jpg'}
+          src={getProductImageUrl(product)}
           alt={product.name}
           className="w-24 h-24 object-cover rounded-lg"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+          }}
         />
       </div>
       

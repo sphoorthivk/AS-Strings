@@ -37,20 +37,38 @@ const MediaGallery: React.FC<MediaGalleryProps> = ({
   };
 
   const getMediaUrl = (mediaItem: any) => {
+    // Handle different media formats
     if (typeof mediaItem === 'string') {
-      // Legacy support for image URLs
-      if (mediaItem.startsWith('http') || mediaItem.startsWith('/api/')) {
+      // If it's already a full URL, use it directly
+      if (mediaItem.startsWith('http') || mediaItem.startsWith('data:')) {
         return mediaItem;
       }
-      return `/api/upload/media/${mediaItem}`;
+      // If it starts with /api/, use it as is
+      if (mediaItem.startsWith('/api/')) {
+        return `http://localhost:5000${mediaItem}`;
+      }
+      // Otherwise construct the API URL
+      return `http://localhost:5000/api/upload/media/${mediaItem}`;
     }
     
-    // New media object format
-    if (mediaItem._id) {
-      return `/api/upload/media/${mediaItem._id}`;
+    // Handle media object format
+    if (mediaItem && typeof mediaItem === 'object') {
+      // Check for dataUrl first (base64 encoded)
+      if (mediaItem.dataUrl) {
+        return mediaItem.dataUrl;
+      }
+      // Check for direct URL
+      if (mediaItem.url && (mediaItem.url.startsWith('http') || mediaItem.url.startsWith('data:'))) {
+        return mediaItem.url;
+      }
+      // Use _id to construct API URL
+      if (mediaItem._id) {
+        return `http://localhost:5000/api/upload/media/${mediaItem._id}`;
+      }
     }
     
-    return mediaItem.dataUrl || mediaItem.url || '';
+    // Fallback to placeholder image
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
   };
 
   const isVideo = (mediaItem: any) => {

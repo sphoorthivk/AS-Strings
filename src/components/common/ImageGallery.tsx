@@ -35,12 +35,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
   };
 
   const getImageUrl = (imageId: string) => {
-    // Check if it's already a full URL
-    if (imageId.startsWith('http') || imageId.startsWith('/api/')) {
+    // Handle different image formats
+    if (imageId.startsWith('http') || imageId.startsWith('data:')) {
       return imageId;
     }
-    // Otherwise, construct the API URL
-    return `/api/upload/images/${imageId}`;
+    // If it starts with /api/, use it with full server URL
+    if (imageId.startsWith('/api/')) {
+      return `http://localhost:5000${imageId}`;
+    }
+    // Otherwise construct the API URL
+    return `http://localhost:5000/api/upload/images/${imageId}`;
   };
 
   if (!images || images.length === 0) {
