@@ -88,7 +88,7 @@ const OrderDetail: React.FC = () => {
 
         {/* Order Status */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
               <StatusIcon className={statusInfo.color} size={32} />
               <div>
@@ -103,6 +103,105 @@ const OrderDetail: React.FC = () => {
               <div className="text-right">
                 <p className="text-sm text-gray-600">Tracking Number</p>
                 <p className="font-medium">{order.trackingNumber}</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Order Progress Tracking */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-medium text-gray-800 mb-4">Order Progress</h4>
+            <div className="flex items-center justify-between">
+              <div className={`flex flex-col items-center ${
+                ['pending', 'processing', 'shipped', 'delivered'].includes(order.orderStatus) 
+                  ? 'text-green-600' : 'text-gray-400'
+              }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  ['pending', 'processing', 'shipped', 'delivered'].includes(order.orderStatus)
+                    ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                  <CheckCircle size={20} />
+                </div>
+                <span className="text-xs mt-2 font-medium">Ordered</span>
+                <span className="text-xs text-gray-500">
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              
+              <div className={`flex-1 h-1 mx-4 ${
+                ['processing', 'shipped', 'delivered'].includes(order.orderStatus)
+                  ? 'bg-green-200' : 'bg-gray-200'
+              }`}></div>
+              
+              <div className={`flex flex-col items-center ${
+                ['processing', 'shipped', 'delivered'].includes(order.orderStatus)
+                  ? 'text-green-600' : 'text-gray-400'
+              }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  ['processing', 'shipped', 'delivered'].includes(order.orderStatus)
+                    ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                  <Package size={20} />
+                </div>
+                <span className="text-xs mt-2 font-medium">Processing</span>
+                <span className="text-xs text-gray-500">
+                  {['processing', 'shipped', 'delivered'].includes(order.orderStatus) ? 'Confirmed' : 'Pending'}
+                </span>
+              </div>
+              
+              <div className={`flex-1 h-1 mx-4 ${
+                ['shipped', 'delivered'].includes(order.orderStatus)
+                  ? 'bg-green-200' : 'bg-gray-200'
+              }`}></div>
+              
+              <div className={`flex flex-col items-center ${
+                ['shipped', 'delivered'].includes(order.orderStatus)
+                  ? 'text-green-600' : 'text-gray-400'
+              }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  ['shipped', 'delivered'].includes(order.orderStatus)
+                    ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                  <Truck size={20} />
+                </div>
+                <span className="text-xs mt-2 font-medium">Shipped</span>
+                <span className="text-xs text-gray-500">
+                  {['shipped', 'delivered'].includes(order.orderStatus) ? 'In Transit' : 'Pending'}
+                </span>
+              </div>
+              
+              <div className={`flex-1 h-1 mx-4 ${
+                order.orderStatus === 'delivered' ? 'bg-green-200' : 'bg-gray-200'
+              }`}></div>
+              
+              <div className={`flex flex-col items-center ${
+                order.orderStatus === 'delivered' ? 'text-green-600' : 'text-gray-400'
+              }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  order.orderStatus === 'delivered' ? 'bg-green-100' : 'bg-gray-100'
+                }`}>
+                  <CheckCircle size={20} />
+                </div>
+                <span className="text-xs mt-2 font-medium">Delivered</span>
+                <span className="text-xs text-gray-500">
+                  {order.orderStatus === 'delivered' ? 'Completed' : 'Pending'}
+                </span>
+              </div>
+            </div>
+            
+            {order.trackingNumber && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Truck className="text-blue-600" size={20} />
+                    <div>
+                      <p className="font-medium text-blue-800">Tracking Number</p>
+                      <p className="text-blue-600 font-mono">{order.trackingNumber}</p>
+                    </div>
+                  </div>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    Track Package
+                  </button>
+                </div>
               </div>
             )}
           </div>

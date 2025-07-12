@@ -91,4 +91,48 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// Update user profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { name, phone, address } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { 
+        name, 
+        phone, 
+        address 
+      },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Change password
+router.put('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    
+    // Check current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+    
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 export default router;
