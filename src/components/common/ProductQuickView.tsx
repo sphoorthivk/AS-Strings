@@ -28,32 +28,33 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
     setSelectedAccessories([]);
   }, [product]);
 
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      showToast('Please select a size before adding to cart', 'warning');
-      return;
-    }
-    
-    if (!product.sizes || product.sizes.length === 0) {
-      showToast('This product has no available sizes', 'error');
-      return;
-    }
-    
-    const stock = product.stock?.[selectedSize] || 0;
-    if (stock < quantity) {
-      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
-      return;
-    }
+const handleAddToCart = () => {
+  if (!selectedSize) {
+    showToast('Please select a size before adding to cart', 'error');
+    return;
+  }
+  
+  if (!product.sizes || product.sizes.length === 0) {
+    showToast('This product has no available sizes', 'error');
+    return;
+  }
+  
+  const stock = product.stock?.[selectedSize] || 0;
+  if (stock < quantity) {
+    showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
+    return;
+  }
 
-    // Get selected accessories
-    const accessories = selectedAccessories.map(accessoryId => 
-      product.accessories?.find((acc: any) => acc.id === accessoryId)
-    ).filter(Boolean);
+  // Get selected accessories
+  const accessories = selectedAccessories.map(accessoryId => 
+    product.accessories?.find((acc: any) => acc.id === accessoryId)
+  ).filter(Boolean);
 
-    addItem(product, selectedSize, quantity, accessories);
-    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
-    onClose();
-  };
+  addItem(product, selectedSize, quantity, accessories);
+  showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
+  onClose();
+};
+
 
   const handleToggleWishlist = () => {
     if (!user) {

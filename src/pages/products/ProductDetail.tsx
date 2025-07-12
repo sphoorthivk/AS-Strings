@@ -46,31 +46,35 @@ const ProductDetail: React.FC = () => {
     }
   };
 
+ 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      showToast('Please select a size before adding to cart', 'warning');
-      return;
-    }
-    
-    if (!product.sizes || product.sizes.length === 0) {
-      showToast('This product has no available sizes', 'error');
-      return;
-    }
-    
-    const stock = product.stock?.[selectedSize] || 0;
-    if (stock < quantity) {
-      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
-      return;
-    }
+  // Check if product has sizes and none is selected
+  if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+    showToast('Please select a size before adding to cart', 'error');
+    return;
+  }
+  
+  // If no sizes available, show error
+  if (!product.sizes || product.sizes.length === 0) {
+    showToast('This product has no available sizes', 'error');
+    return;
+  }
+  
+  const stock = product.stock?.[selectedSize] || 0;
+  if (stock < quantity) {
+    showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
+    return;
+  }
 
-    // Get selected accessories
-    const accessories = selectedAccessories.map(accessoryId => 
-      product.accessories?.find((acc: any) => acc.id === accessoryId)
-    ).filter(Boolean);
+  // Get selected accessories
+  const accessories = selectedAccessories.map(accessoryId => 
+    product.accessories?.find((acc: any) => acc.id === accessoryId)
+  ).filter(Boolean);
 
-    addItem(product, selectedSize, quantity, accessories);
-    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
-  };
+  addItem(product, selectedSize, quantity, accessories);
+  showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
+};
+
 
   const handleToggleWishlist = () => {
     if (!user) {
@@ -169,39 +173,43 @@ const ProductDetail: React.FC = () => {
             <p>{product.description}</p>
           </div>
 
-          {/* Size Selection */}
-          {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Size *</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {product.sizes.map((size: string) => {
-                  const stock = product.stock?.[size] || 0;
-                  const isAvailable = stock > 0;
-                  
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => isAvailable && setSelectedSize(size)}
-                      disabled={!isAvailable}
-                      className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
-                        selectedSize === size
-                          ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
-                          : isAvailable
-                          ? 'border-gray-300 hover:border-gray-400'
-                          : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
-                    >
-                      {size}
-                      {!isAvailable && <div className="text-xs">Out of Stock</div>}
-                    </button>
-                  );
-                })}
-              </div>
-              {!selectedSize && (
-                <p className="text-sm text-red-600 mt-2">* Please select a size</p>
-              )}
-            </div>
-          )}
+         {/* Size Selection */}
+{product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
+  <div>
+    <h3 className="text-lg font-semibold mb-3">
+      Size <span className="text-red-600">*</span> 
+      <span className="text-sm text-gray-500 font-normal">(Required)</span>
+    </h3>
+    <div className="grid grid-cols-4 gap-3">
+      {product.sizes.map((size: string) => {
+        const stock = product.stock?.[size] || 0;
+        const isAvailable = stock > 0;
+        
+        return (
+          <button
+            key={size}
+            onClick={() => isAvailable && setSelectedSize(size)}
+            disabled={!isAvailable}
+            className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
+              selectedSize === size
+                ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
+                : isAvailable
+                ? 'border-gray-300 hover:border-gray-400'
+                : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {size}
+            {!isAvailable && <div className="text-xs">Out of Stock</div>}
+          </button>
+        );
+      })}
+    </div>
+    {!selectedSize && (
+      <p className="text-sm text-red-600 mt-2 font-medium">* Please select a size before adding to cart</p>
+    )}
+  </div>
+)}
+
 
           {/* Quantity */}
           <div>

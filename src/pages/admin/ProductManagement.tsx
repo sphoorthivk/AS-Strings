@@ -550,6 +550,23 @@ const ProductManagement: React.FC = () => {
                               Featured
                             </span>
                           )}
+                          {/* Add accessories display */}
+      {product.accessories && product.accessories.length > 0 && (
+        <div className="mt-1">
+          <span className="text-xs text-gray-500">Accessories: </span>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
+              <span key={index} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                {accessory.name} {accessory.price === 0 ? '(Free)' : `($${accessory.price})`}
+              </span>
+            ))}
+            {product.accessories.length > 2 && (
+              <span className="text-xs text-gray-500">+{product.accessories.length - 2} more</span>
+            )}
+            </div>
+        </div>
+      )}
+
                         </div>
                       </div>
                     </td>

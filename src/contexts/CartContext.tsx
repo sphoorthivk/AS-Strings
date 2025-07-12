@@ -32,49 +32,61 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product: Product, size: string, quantity: number, accessories: any[] = []) => {
-    // Validate inputs
-    if (!product || !size || quantity <= 0) {
-      console.error('Invalid product data for cart');
-      showToast('Invalid product data', 'error');
-      return;
-    }
+const addItem = (product: Product, size: string, quantity: number, accessories: any[] = []) => {
+  // Validate inputs
+  if (!product || !size || quantity <= 0) {
+    console.error('Invalid product data for cart');
+    showToast('Invalid product data', 'error');
+    return;
+  }
+
+  // Validate that the product has sizes and the selected size exists
+  if (!product.sizes || product.sizes.length === 0) {
+    showToast('This product has no available sizes', 'error');
+    return;
+  }
+
+  if (!product.sizes.includes(size)) {
+    showToast('Selected size is not available for this product', 'error');
+    return;
+  }
+  
+  // Check stock availability
+  const availableStock = product.stock?.[size] || 0;
+  if (availableStock < quantity) {
+    showToast(`Only ${availableStock} items available in size ${size}`, 'error');
+    return;
+  }
+  
+  setItems(prevItems => {
+    const existingItem = prevItems.find(item => 
+      item.productId === product._id && 
+      item.size === size &&
+      JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
+    );
     
-    // Check stock availability
-    const availableStock = product.stock?.[size] || 0;
-    if (availableStock < quantity) {
-      showToast(`Only ${availableStock} items available in size ${size}`, 'error');
-      return;
-    }
-    
-    setItems(prevItems => {
-      const existingItem = prevItems.find(item => 
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + quantity;
+      
+      // Check if new quantity exceeds stock
+      if (newQuantity > availableStock) {
+        showToast(`Cannot add more items. Only ${availableStock} available in size ${size}`, 'error');
+        return prevItems;
+      }
+      
+      return prevItems.map(item =>
         item.productId === product._id && 
         item.size === size &&
         JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
+          ? { ...item, quantity: newQuantity }
+          : item
       );
-      
-      if (existingItem) {
-        const newQuantity = existingItem.quantity + quantity;
-        
-        // Check if new quantity exceeds stock
-        if (newQuantity > availableStock) {
-          showToast(`Cannot add more items. Only ${availableStock} available in size ${size}`, 'error');
-          return prevItems;
-        }
-        
-        return prevItems.map(item =>
-          item.productId === product._id && 
-          item.size === size &&
-          JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
-            ? { ...item, quantity: newQuantity }
-            : item
-        );
-      }
-      
-      return [...prevItems, { productId: product._id, product, size, quantity, accessories }];
-    });
-  };
+    }
+    
+    return [...prevItems, { productId: product._id, product, size, quantity, accessories }];
+  });
+};
+
 
   const removeItem = (productId: string, size: string) => {
     setItems(prevItems => prevItems.filter(item => !(item.productId === productId && item.size === size)));
