@@ -33,6 +33,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [items]);
 
   const addItem = (product: Product, size: string, quantity: number) => {
+  }
   const addItem = (product: Product, size: string, quantity: number, accessories: any[] = []) => {
     // Validate inputs
     if (!product || !size || quantity <= 0) {
