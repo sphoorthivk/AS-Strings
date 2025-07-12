@@ -355,10 +355,27 @@ const OrderManagement: React.FC = () => {
                           <h4 className="font-medium">{item.product?.name}</h4>
                           <p className="text-sm text-gray-600">Size: {item.size}</p>
                           <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                          {item.accessories && item.accessories.length > 0 && (
+                            <div className="text-sm text-gray-600 mt-1">
+                              <span className="font-medium">Accessories:</span>
+                              <div className="ml-2">
+                                {item.accessories.map((accessory, index) => (
+                                  <div key={index} className="text-xs">
+                                    • {accessory.name} {accessory.price === 0 ? '(Free)' : `(+$${accessory.price})`}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                           <p className="text-sm text-gray-600">${item.price} each</p>
+                          {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
+                            <p className="text-xs text-gray-500">
+                              +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)} accessories
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

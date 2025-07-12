@@ -26,6 +26,7 @@ export interface CartItem {
   product: Product;
   size: string;
   quantity: number;
+  accessories?: any[];
 }
 
 export interface Order {
@@ -70,7 +71,7 @@ export interface AuthContextType {
 
 export interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, size: string, quantity: number) => void;
+  addItem: (product: Product, size: string, quantity: number, accessories?: any[]) => void;
   removeItem: (productId: string, size: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;

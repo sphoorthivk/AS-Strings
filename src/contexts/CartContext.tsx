@@ -14,6 +14,7 @@ export const useCart = () => {
 
 interface CartProviderProps {
   children: ReactNode;
+  accessories?: any[];
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
@@ -32,6 +33,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [items]);
 
   const addItem = (product: Product, size: string, quantity: number) => {
+  const addItem = (product: Product, size: string, quantity: number, accessories: any[] = []) => {
     // Validate inputs
     if (!product || !size || quantity <= 0) {
       console.error('Invalid product data for cart');
@@ -47,7 +49,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
     
     setItems(prevItems => {
-      const existingItem = prevItems.find(item => item.productId === product._id && item.size === size);
+      const existingItem = prevItems.find(item => 
+        item.productId === product._id && 
+        item.size === size &&
+        JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
+      );
       
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
@@ -59,13 +65,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         }
         
         return prevItems.map(item =>
-          item.productId === product._id && item.size === size
+          item.productId === product._id && 
+          item.size === size &&
+          JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
             ? { ...item, quantity: newQuantity }
             : item
         );
       }
       
-      return [...prevItems, { productId: product._id, product, size, quantity }];
+      return [...prevItems, { productId: product._id, product, size, quantity, accessories }];
     });
   };
 
@@ -93,7 +101,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const totalPrice = items.reduce((sum, item) => {
+    const productTotal = item.product.price * item.quantity;
+    const accessoriesTotal = (item.accessories || []).reduce((accSum: number, acc: any) => accSum + (acc.price * item.quantity), 0);
+    return sum + productTotal + accessoriesTotal;
+  }, 0);
 
   const value = {
     items,

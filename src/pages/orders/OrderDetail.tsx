@@ -271,6 +271,25 @@ const OrderDetail: React.FC = () => {
                     <span className="text-sm text-gray-600">Size: {item.size}</span>
                     <span className="text-sm text-gray-600">Quantity: {item.quantity}</span>
                   </div>
+                  {item.accessories && item.accessories.length > 0 && (
+                    <div className="text-sm text-gray-600 mt-2">
+                      <span className="font-medium">Accessories:</span>
+                      <div className="ml-2">
+                        {item.accessories.map((accessory, index) => (
+                          <div key={index} className="text-xs flex items-center justify-between">
+                            <span>• {accessory.name}</span>
+                            <span className="ml-2">
+                              {accessory.price === 0 ? (
+                                <span className="text-green-600 font-medium">Free</span>
+                              ) : (
+                                `+$${accessory.price}`
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {order.trackingNumber && (
                     <div className="flex justify-between">
                       <span>Tracking Number:</span>
@@ -281,6 +300,11 @@ const OrderDetail: React.FC = () => {
                 <div className="text-right">
                   <p className="font-medium text-lg">${(item.price * item.quantity).toFixed(2)}</p>
                   <p className="text-sm text-gray-600">${item.price} each</p>
+                  {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
+                    <p className="text-xs text-gray-500">
+                      +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)} accessories
+                    </p>
+                  )}
                 </div>
               </div>
             ))}

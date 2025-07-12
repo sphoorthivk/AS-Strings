@@ -35,7 +35,8 @@ router.post('/', auth, async (req, res) => {
         product: product._id,
         size: item.size,
         quantity: item.quantity,
-        price: product.price
+        price: product.price,
+        accessories: item.accessories || []
       });
 
       // Update stock

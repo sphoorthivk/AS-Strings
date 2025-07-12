@@ -98,7 +98,35 @@ const Cart: React.FC = () => {
                       <h3 className="font-semibold text-gray-800 text-base sm:text-lg">{item.product.name}</h3>
                       <p className="text-sm text-gray-600">{item.product.category}</p>
                       <p className="text-sm text-gray-600">Size: {item.size}</p>
-                      <p className="text-lg font-bold text-purple-600">${item.product.price}</p>
+                      {item.accessories && item.accessories.length > 0 && (
+                        <div className="text-sm text-gray-600 mt-1">
+                          <span className="font-medium">Accessories:</span>
+                          <div className="ml-2">
+                            {item.accessories.map((accessory, index) => (
+                              <div key={index} className="flex items-center justify-between">
+                                <span>• {accessory.name}</span>
+                                <span className="ml-2">
+                                  {accessory.price === 0 ? (
+                                    <span className="text-green-600 font-medium">Free</span>
+                                  ) : (
+                                    `+$${accessory.price}`
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="mt-2">
+                        <p className="text-lg font-bold text-purple-600">
+                          ${(item.product.price + (item.accessories || []).reduce((sum: number, acc: any) => sum + acc.price, 0)).toFixed(2)}
+                        </p>
+                        {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
+                          <p className="text-sm text-gray-500">
+                            Base: ${item.product.price} + Accessories: ${(item.accessories || []).reduce((sum: number, acc: any) => sum + acc.price, 0).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-between sm:flex-col sm:items-end space-y-0 sm:space-y-3">

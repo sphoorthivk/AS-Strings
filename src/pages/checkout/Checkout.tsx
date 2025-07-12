@@ -100,7 +100,8 @@ const Checkout: React.FC = () => {
         items: items.map(item => ({
           productId: item.productId,
           size: item.size,
-          quantity: item.quantity
+          quantity: item.quantity,
+          accessories: item.accessories || []
         })),
         shippingAddress: {
           fullName: formData.fullName,
@@ -315,8 +316,20 @@ const Checkout: React.FC = () => {
                     <h4 className="font-medium">{item.product.name}</h4>
                     <p className="text-sm text-gray-600">Size: {item.size}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                    {item.accessories && item.accessories.length > 0 && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        <span className="font-medium">Accessories:</span>
+                        {item.accessories.map((accessory, index) => (
+                          <div key={index} className="ml-2">
+                            • {accessory.name} {accessory.price === 0 ? '(Free)' : `(+$${accessory.price})`}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-medium">
+                    ${((item.product.price + (item.accessories || []).reduce((sum: number, acc: any) => sum + acc.price, 0)) * item.quantity).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>

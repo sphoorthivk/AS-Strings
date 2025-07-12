@@ -15,6 +15,7 @@ interface ProductQuickViewProps {
 const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, onClose }) => {
   const [selectedSize, setSelectedSize] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [selectedAccessories, setSelectedAccessories] = useState<string[]>([]);
   const { addItem } = useCart();
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
@@ -24,6 +25,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
     if (product?.sizes?.length > 0) {
       setSelectedSize(product.sizes[0]);
     }
+    setSelectedAccessories([]);
   }, [product]);
 
   const handleAddToCart = () => {
@@ -38,7 +40,12 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       return;
     }
 
-    addItem(product, selectedSize, quantity);
+    // Get selected accessories
+    const accessories = selectedAccessories.map(accessoryId => 
+      product.accessories?.find((acc: any) => acc.id === accessoryId)
+    ).filter(Boolean);
+
+    addItem(product, selectedSize, quantity, accessories);
     showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
     onClose();
   };
@@ -196,6 +203,47 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 </div>
               </div>
 
+              {/* Accessories Selection */}
+              {product.accessories && product.accessories.length > 0 && (
+                <div>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">Available Accessories</h3>
+                  <div className="space-y-2">
+                    {product.accessories.map((accessory: any) => (
+                      <label key={accessory.id} className="flex items-center justify-between p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedAccessories.includes(accessory.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedAccessories([...selectedAccessories, accessory.id]);
+                              } else {
+                                setSelectedAccessories(selectedAccessories.filter(id => id !== accessory.id));
+                              }
+                            }}
+                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-2"
+                          />
+                          <div>
+                            <div className="font-medium text-sm">{accessory.name}</div>
+                            <div className="text-xs text-gray-600">
+                              {accessory.price === 0 ? (
+                                <span className="text-green-600 font-medium">Free</span>
+                              ) : (
+                                `+$${accessory.price}`
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        {accessory.price === 0 && (
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                            Free
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Action Buttons */}
               <div className="space-y-3 sm:space-y-4">
                 <button

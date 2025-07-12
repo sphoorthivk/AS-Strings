@@ -24,7 +24,12 @@ const orderSchema = new Schema({
     price: {
       type: Number,
       required: true
-    }
+    },
+    accessories: [{
+      id: String,
+      name: String,
+      price: Number
+    }]
   }],
   shippingAddress: {
     fullName: {

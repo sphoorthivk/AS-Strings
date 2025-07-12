@@ -308,8 +308,8 @@ const ProductManagement: React.FC = () => {
     }
     
     const price = parseFloat(newAccessory.price);
-    if (isNaN(price) || price <= 0) {
-      showToast('Please enter a valid price greater than 0', 'error');
+    if (isNaN(price) || price < 0) {
+      showToast('Please enter a valid price (0 or greater)', 'error');
       return;
     }
 
@@ -1021,13 +1021,13 @@ const ProductManagement: React.FC = () => {
                           <input
                             type="number"
                             step="0.01"
-                            min="0.01"
+                            min="0"
                             value={newAccessory.price}
                             onChange={(e) => setNewAccessory({ ...newAccessory, price: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                            placeholder="5.99"
+                            placeholder="5.99 (Enter 0 for free)"
                           />
-                          <p className="text-xs text-gray-500 mt-1">Enter price greater than $0.00</p>
+                          <p className="text-xs text-gray-500 mt-1">Enter price (0 for free accessory)</p>
                         </div>
                       </div>
                       <div className="flex justify-end space-x-3 mt-4">
@@ -1055,7 +1055,9 @@ const ProductManagement: React.FC = () => {
                         <div key={accessory.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                           <div>
                             <span className="font-medium">{accessory.name}</span>
-                            <span className="text-gray-600 ml-2">${accessory.price}</span>
+                            <span className="text-gray-600 ml-2">
+                              {accessory.price === 0 ? 'Free' : `$${accessory.price}`}
+                            </span>
                           </div>
                           <button
                             type="button"
