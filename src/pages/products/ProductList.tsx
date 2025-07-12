@@ -382,46 +382,49 @@ const ProductList: React.FC = () => {
         {/* Filters Sidebar */}
         <div 
           ref={filtersRef}
-          className={`fixed inset-y-0 left-0 z-50 w-80 max-w-full bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:relative lg:inset-auto lg:w-1/4 lg:transform-none lg:shadow-none lg:z-auto ${
+          className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:relative lg:inset-auto lg:w-1/4 lg:transform-none lg:shadow-none lg:z-auto ${
             showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product filters"
         >
           <div className="h-full overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-0">
+            <div className="bg-white lg:rounded-lg lg:shadow-md p-4 sm:p-6 sticky top-0 border-b lg:border-b-0">
               <div className="flex items-center justify-between mb-4 lg:justify-start">
-                <h3 className="text-lg font-semibold">Filters</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200"
+                  className="lg:hidden p-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                   aria-label="Close filters"
                 >
                   <X size={20} />
                 </button>
               </div>
               
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                  <select
-                    value={filters.gender}
-                    onChange={(e) => setFilters({...filters, gender: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
-                  >
-                    {genderOptions.map(gender => (
-                      <option key={gender} value={gender}>{gender === 'All' ? 'All Genders' : gender.charAt(0).toUpperCase() + gender.slice(1)}</option>
-                    ))}
-                  </select>
-                </div>
-
+              <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select
                     value={filters.category}
                     onChange={(e) => setFilters({...filters, category: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                    className="form-input"
                   >
                     {availableCategories.map(category => (
                       <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <select
+                    value={filters.gender}
+                    onChange={(e) => setFilters({...filters, gender: e.target.value})}
+                    className="form-input"
+                  >
+                    {genderOptions.map(gender => (
+                      <option key={gender} value={gender}>{gender === 'All' ? 'All Genders' : gender.charAt(0).toUpperCase() + gender.slice(1)}</option>
                     ))}
                   </select>
                 </div>
@@ -431,7 +434,7 @@ const ProductList: React.FC = () => {
                   <select
                     value={filters.priceRange}
                     onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                    className="form-input"
                   >
                     {priceRanges.map(range => (
                       <option key={range} value={range}>{range}</option>
@@ -444,7 +447,7 @@ const ProductList: React.FC = () => {
                   <select
                     value={filters.size}
                     onChange={(e) => setFilters({...filters, size: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                    className="form-input"
                   >
                     {sizes.map(size => (
                       <option key={size} value={size}>{size}</option>
@@ -457,7 +460,7 @@ const ProductList: React.FC = () => {
                   <select
                     value={filters.color}
                     onChange={(e) => setFilters({...filters, color: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                    className="form-input"
                   >
                     {colors.map(color => (
                       <option key={color} value={color}>{color}</option>
@@ -466,7 +469,7 @@ const ProductList: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <button
                   onClick={() => {
                     setFilters({
@@ -479,7 +482,7 @@ const ProductList: React.FC = () => {
                     });
                     setCurrentPage(1);
                   }}
-                  className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  className="btn-secondary w-full"
                 >
                   Clear All Filters
                 </button>
@@ -491,19 +494,19 @@ const ProductList: React.FC = () => {
         {/* Main Content */}
         <div className="lg:w-3/4">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                 {gender && gender !== 'all' ? `${gender.charAt(0).toUpperCase() + gender.slice(1)}'s ` : ''}
                 {category && category !== 'all' ? category : 'All Products'}
               </h1>
-              <p className="text-gray-600">Showing {products.length} products</p>
+              <p className="text-sm sm:text-base text-gray-600">Showing {products.length} products</p>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden flex items-center space-x-2 px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="lg:hidden flex items-center space-x-2 px-3 sm:px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base touch-manipulation"
               >
                 <Filter size={16} />
                 <span>Filters</span>
@@ -512,14 +515,14 @@ const ProductList: React.FC = () => {
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
-                className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                className="px-3 py-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
               >
                 {sortOptions.map(option => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
               
-              <div className="flex items-center space-x-2">
+              <div className="hidden sm:flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`p-3 rounded-lg transition-colors ${
@@ -550,13 +553,13 @@ const ProductList: React.FC = () => {
           {!loading && (
             <>
               {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="responsive-grid">
                   {products.map(product => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 sm:space-y-6">
                   {products.map(product => (
                     <ProductListItem key={product._id} product={product} />
                   ))}
@@ -564,10 +567,10 @@ const ProductList: React.FC = () => {
               )}
 
               {products.length === 0 && !loading && (
-                <div className="text-center py-16">
+                <div className="text-center py-12 sm:py-16">
                   <Package size={64} className="mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">No products found</h2>
-                  <p className="text-gray-600 mb-8">Try adjusting your filters or search terms.</p>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">No products found</h2>
+                  <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Try adjusting your filters or search terms.</p>
                   <button
                     onClick={() => {
                       setFilters({
@@ -580,7 +583,7 @@ const ProductList: React.FC = () => {
                       });
                       setCurrentPage(1);
                     }}
-                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    className="btn-primary"
                   >
                     Clear Filters
                   </button>
@@ -591,12 +594,12 @@ const ProductList: React.FC = () => {
 
           {/* Pagination */}
           {!loading && totalPages > 1 && (
-            <div className="flex justify-center mt-12">
-              <nav className="flex items-center space-x-2">
+            <div className="flex justify-center mt-8 sm:mt-12">
+              <nav className="flex items-center space-x-1 sm:space-x-2">
                 <button 
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 font-medium"
+                  className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 font-medium text-sm sm:text-base touch-manipulation"
                 >
                   Previous
                 </button>
@@ -606,7 +609,7 @@ const ProductList: React.FC = () => {
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-4 py-3 rounded-lg transition-colors font-medium ${
+                      className={`px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-colors font-medium text-sm sm:text-base touch-manipulation ${
                         page === currentPage 
                           ? 'bg-purple-600 text-white' 
                           : 'border border-gray-300 hover:bg-gray-100'
@@ -619,7 +622,7 @@ const ProductList: React.FC = () => {
                 <button 
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 font-medium"
+                  className="px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 font-medium text-sm sm:text-base touch-manipulation"
                 >
                   Next
                 </button>

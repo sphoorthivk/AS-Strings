@@ -78,6 +78,13 @@ const Header: React.FC = () => {
     };
   }, [isMenuOpen]);
 
+  // Handle keyboard navigation for accessibility
+  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -99,15 +106,15 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50">
+    <header className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 z-10" onClick={handleLinkClick}>
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">F</span>
+            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-sm lg:text-base">F</span>
             </div>
-            <span className="text-xl font-bold text-gray-800 hidden sm:block">FashionHub</span>
+            <span className="text-lg lg:text-xl font-bold text-gray-800 hidden sm:block">FashionHub</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -130,25 +137,27 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
             {/* Search */}
             <div className="relative" ref={searchRef}>
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200"
+                className="p-2 lg:p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 touch-manipulation"
                 aria-label="Search"
+                onKeyDown={(e) => handleKeyDown(e, () => setIsSearchOpen(!isSearchOpen))}
+                tabIndex={0}
               >
                 <Search size={20} />
               </button>
               {isSearchOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border p-2 transform transition-all duration-200 ease-out">
+                <div className="absolute right-0 top-full mt-2 w-72 lg:w-80 bg-white rounded-lg shadow-lg border p-2 transform transition-all duration-200 ease-out animate-in slide-in-from-top-2">
                   <form onSubmit={handleSearch}>
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search products..."
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
                       autoFocus
                     />
                   </form>
@@ -159,13 +168,13 @@ const Header: React.FC = () => {
             {/* Wishlist */}
             <Link 
               to="/wishlist" 
-              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative"
+              className="p-2 lg:p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative touch-manipulation"
               aria-label={`Wishlist (${wishlistItems} items)`}
               onClick={handleLinkClick}
             >
               <Heart size={20} />
               {wishlistItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
                   {wishlistItems}
                 </span>
               )}
@@ -174,13 +183,13 @@ const Header: React.FC = () => {
             {/* Cart */}
             <Link 
               to="/cart" 
-              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative"
+              className="p-2 lg:p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative touch-manipulation"
               aria-label={`Cart (${totalItems} items)`}
               onClick={handleLinkClick}
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
                   {totalItems}
                 </span>
               )}
@@ -191,14 +200,16 @@ const Header: React.FC = () => {
               <div className="relative" ref={userMenuRef}>
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200"
+                  className="p-2 lg:p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 touch-manipulation"
                   aria-label="User menu"
                   aria-expanded={isUserMenuOpen}
+                  onKeyDown={(e) => handleKeyDown(e, () => setIsUserMenuOpen(!isUserMenuOpen))}
+                  tabIndex={0}
                 >
                   <User size={20} />
                 </button>
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border transform transition-all duration-200 ease-out">
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border transform transition-all duration-200 ease-out animate-in slide-in-from-top-2">
                     <div className="p-3 border-b">
                       <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
@@ -206,14 +217,14 @@ const Header: React.FC = () => {
                     <nav className="py-2">
                       <Link 
                         to="/profile" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
                         onClick={handleLinkClick}
                       >
                         Profile
                       </Link>
                       <Link 
                         to="/orders" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
                         onClick={handleLinkClick}
                       >
                         Orders
@@ -222,14 +233,14 @@ const Header: React.FC = () => {
                         <>
                           <Link 
                             to="/admin" 
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
                             onClick={handleLinkClick}
                           >
                             Admin Dashboard
                           </Link>
                           <Link 
                             to="/admin/categories" 
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
                             onClick={handleLinkClick}
                           >
                             Manage Categories
@@ -238,7 +249,7 @@ const Header: React.FC = () => {
                       )}
                       <button
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
                       >
                         Logout
                       </button>
@@ -249,7 +260,7 @@ const Header: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 lg:px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium text-sm lg:text-base touch-manipulation"
                 onClick={handleLinkClick}
               >
                 Login
@@ -258,12 +269,14 @@ const Header: React.FC = () => {
           </div>
 
           {/* Mobile Actions */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="flex md:hidden items-center space-x-1">
             {/* Mobile Search */}
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200"
+              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Search"
+              onKeyDown={(e) => handleKeyDown(e, () => setIsSearchOpen(!isSearchOpen))}
+              tabIndex={0}
             >
               <Search size={20} />
             </button>
@@ -271,13 +284,13 @@ const Header: React.FC = () => {
             {/* Mobile Cart */}
             <Link 
               to="/cart" 
-              className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative"
+              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 relative touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label={`Cart (${totalItems} items)`}
               onClick={handleLinkClick}
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-4 h-4 flex items-center justify-center px-1 font-medium">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
                   {totalItems}
                 </span>
               )}
@@ -286,9 +299,11 @@ const Header: React.FC = () => {
             {/* Hamburger Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200"
+              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Menu"
               aria-expanded={isMenuOpen}
+              onKeyDown={(e) => handleKeyDown(e, () => setIsMenuOpen(!isMenuOpen))}
+              tabIndex={0}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -297,14 +312,14 @@ const Header: React.FC = () => {
 
         {/* Mobile Search Bar */}
         {isSearchOpen && (
-          <div className="md:hidden py-4 border-t" ref={searchRef}>
+          <div className="md:hidden py-4 border-t animate-in slide-in-from-top-2" ref={searchRef}>
             <form onSubmit={handleSearch}>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base"
+                className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 text-base touch-manipulation"
                 autoFocus
               />
             </form>
@@ -314,19 +329,27 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setIsMenuOpen(false)} />
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden animate-in fade-in duration-200" 
+          onClick={() => setIsMenuOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setIsMenuOpen(false)}
+          tabIndex={-1}
+        />
       )}
 
       {/* Mobile Menu */}
       <div 
         ref={mobileMenuRef}
-        className={`fixed top-0 right-0 h-full w-80 max-w-full bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
       >
         <div className="flex flex-col h-full">
           {/* Mobile Menu Header */}
-          <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center justify-between p-4 border-b bg-gray-50">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">F</span>
@@ -335,8 +358,10 @@ const Header: React.FC = () => {
             </div>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className="p-2 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200"
+              className="p-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-full transition-all duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Close menu"
+              onKeyDown={(e) => handleKeyDown(e, () => setIsMenuOpen(false))}
+              tabIndex={0}
             >
               <X size={24} />
             </button>
@@ -344,48 +369,48 @@ const Header: React.FC = () => {
 
           {/* Mobile Menu Content */}
           <div className="flex-1 overflow-y-auto">
-            <nav className="p-4 space-y-2">
+            <nav className="p-4 space-y-1">
               <Link 
                 to="/products/women" 
-                className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 Women
               </Link>
               <Link 
                 to="/products/men" 
-                className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 Men
               </Link>
               <Link 
                 to="/products" 
-                className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 Categories
               </Link>
               <Link 
                 to="/about" 
-                className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 About
               </Link>
               <Link 
                 to="/contact" 
-                className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 Contact
               </Link>
             </nav>
 
-            <div className="border-t p-4 space-y-2">
+            <div className="border-t p-4 space-y-1">
               <Link 
                 to="/wishlist" 
-                className="flex items-center justify-between py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                className="flex items-center justify-between py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 onClick={handleLinkClick}
               >
                 <div className="flex items-center space-x-3">
@@ -393,7 +418,7 @@ const Header: React.FC = () => {
                   <span>Wishlist</span>
                 </div>
                 {wishlistItems > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium">
+                  <span className="bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
                     {wishlistItems}
                   </span>
                 )}
@@ -401,21 +426,21 @@ const Header: React.FC = () => {
             </div>
 
             {user ? (
-              <div className="border-t p-4 space-y-2">
+              <div className="border-t p-4 space-y-1">
                 <div className="px-4 py-2">
                   <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
                 <Link 
                   to="/profile" 
-                  className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                   onClick={handleLinkClick}
                 >
                   Profile
                 </Link>
                 <Link 
                   to="/orders" 
-                  className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                   onClick={handleLinkClick}
                 >
                   Orders
@@ -424,14 +449,14 @@ const Header: React.FC = () => {
                   <>
                     <Link 
                       to="/admin" 
-                      className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                      className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                       onClick={handleLinkClick}
                     >
                       Admin Dashboard
                     </Link>
                     <Link 
                       to="/admin/categories" 
-                      className="flex items-center py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                      className="flex items-center py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                       onClick={handleLinkClick}
                     >
                       Manage Categories
@@ -440,7 +465,7 @@ const Header: React.FC = () => {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full py-3 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium"
+                  className="flex items-center w-full py-4 px-4 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 font-medium touch-manipulation text-base"
                 >
                   Logout
                 </button>
@@ -449,7 +474,7 @@ const Header: React.FC = () => {
               <div className="border-t p-4">
                 <Link
                   to="/login"
-                  className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-center font-medium"
+                  className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-center font-medium text-base touch-manipulation"
                   onClick={handleLinkClick}
                 >
                   Login

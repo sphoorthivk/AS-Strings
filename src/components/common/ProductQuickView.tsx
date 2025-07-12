@@ -58,21 +58,33 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      tabIndex={-1}
+    >
+      <div 
+        className="bg-white rounded-xl sm:rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-top-2"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Product quick view"
+      >
+        <div className="p-4 sm:p-6">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Quick View</h2>
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Quick View</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-3 hover:bg-gray-100 rounded-full transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Close quick view"
             >
               <X size={24} />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             {/* Media Gallery */}
             <div>
               <MediaGallery 
@@ -82,10 +94,10 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
             </div>
 
             {/* Product Info */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
                 <div className="text-sm text-purple-600 font-medium mb-2">{product.category}</div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{product.name}</h1>
                 
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex items-center">
@@ -107,10 +119,10 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 </div>
 
                 <div className="flex items-center space-x-4 mb-6">
-                  <span className="text-2xl font-bold text-gray-900">${product.price}</span>
+                  <span className="text-2xl sm:text-3xl font-bold text-gray-900">${product.price}</span>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <>
-                      <span className="text-lg text-gray-500 line-through">${product.originalPrice}</span>
+                      <span className="text-lg sm:text-xl text-gray-500 line-through">${product.originalPrice}</span>
                       <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm font-medium">
                         {discount}% OFF
                       </span>
@@ -119,15 +131,15 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 </div>
               </div>
 
-              <div className="prose prose-sm prose-gray">
+              <div className="prose prose-sm prose-gray text-sm sm:text-base">
                 <p>{product.description}</p>
               </div>
 
               {/* Size Selection */}
               {product.sizes && product.sizes.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Size</h3>
-                  <div className="grid grid-cols-4 gap-2">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">Size</h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {product.sizes.map((size: string) => {
                       const stock = product.stock?.[size] || 0;
                       const isAvailable = stock > 0;
@@ -137,7 +149,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                           key={size}
                           onClick={() => isAvailable && setSelectedSize(size)}
                           disabled={!isAvailable}
-                          className={`py-2 px-3 border rounded-lg font-medium transition-colors text-sm ${
+                          className={`py-3 px-3 border rounded-lg font-medium transition-colors text-sm touch-manipulation ${
                             selectedSize === size
                               ? 'border-purple-600 bg-purple-50 text-purple-600'
                               : isAvailable
@@ -156,22 +168,22 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
 
               {/* Quantity */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Quantity</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-3">Quantity</h3>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-2 hover:bg-gray-100 transition-colors"
+                      className="p-3 hover:bg-gray-100 transition-colors touch-manipulation"
                     >
                       <Minus size={16} />
                     </button>
-                    <span className="px-4 py-2 font-medium">{quantity}</span>
+                    <span className="px-4 py-3 font-medium">{quantity}</span>
                     <button
                       onClick={() => {
                         const maxStock = product.stock?.[selectedSize] || 0;
                         setQuantity(Math.min(maxStock, quantity + 1));
                       }}
-                      className="p-2 hover:bg-gray-100 transition-colors"
+                      className="p-3 hover:bg-gray-100 transition-colors touch-manipulation"
                     >
                       <Plus size={16} />
                     </button>
@@ -185,10 +197,10 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 <button
                   onClick={handleAddToCart}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                  className="btn-primary w-full flex items-center justify-center space-x-2"
                 >
                   <ShoppingCart size={20} />
                   <span>Add to Cart</span>
@@ -196,7 +208,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                 
                 <button
                   onClick={handleToggleWishlist}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold border-2 transition-all duration-200 flex items-center justify-center space-x-2 ${
+                  className={`w-full py-3 px-6 rounded-lg font-semibold border-2 transition-all duration-200 flex items-center justify-center space-x-2 touch-manipulation ${
                     isInWishlist(product._id)
                       ? 'border-red-500 bg-red-50 text-red-600'
                       : 'border-gray-300 hover:border-gray-400'

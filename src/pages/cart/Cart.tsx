@@ -56,14 +56,14 @@ const Cart: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-12 sm:py-16">
         <div className="text-center">
           <ShoppingBag size={64} className="mx-auto text-gray-400 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Your cart is empty</h1>
-          <p className="text-gray-600 mb-8">Looks like you haven't added anything to your cart yet.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Your cart is empty</h1>
+          <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Looks like you haven't added anything to your cart yet.</p>
           <Link
             to="/products"
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
+            className="btn-primary"
           >
             Continue Shopping
           </Link>
@@ -73,65 +73,71 @@ const Cart: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Shopping Cart</h1>
+    <div className="container mx-auto px-4 py-6 sm:py-8">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">Shopping Cart</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {items.map((item) => (
-            <div key={`${item.productId}-${item.size}`} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center space-x-4">
+            <div key={`${item.productId}-${item.size}`} className="card">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <img
                   src={getProductImageUrl(item.product)}
                   alt={item.product.name}
-                  className="w-20 h-20 object-cover rounded-lg"
+                  className="w-full sm:w-20 h-48 sm:h-20 object-cover rounded-lg"
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement;
                     target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
                   }}
                 />
                 
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800">{item.product.name}</h3>
-                  <p className="text-sm text-gray-600">{item.product.category}</p>
-                  <p className="text-sm text-gray-600">Size: {item.size}</p>
-                  <p className="text-lg font-bold text-purple-600">${item.product.price}</p>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center border border-gray-300 rounded-lg">
-                    <button
-                      onClick={() => {
-                        const maxStock = item.product.stock?.[item.size] || 0;
-                        handleQuantityChange(item.productId, item.size, item.quantity - 1, maxStock);
-                      }}
-                      className="p-2 hover:bg-gray-100 transition-colors"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="px-4 py-2 font-medium">{item.quantity}</span>
-                    <button
-                      onClick={() => {
-                        const maxStock = item.product.stock?.[item.size] || 0;
-                        handleQuantityChange(item.productId, item.size, item.quantity + 1, maxStock);
-                      }}
-                      className="p-2 hover:bg-gray-100 transition-colors"
-                    >
-                      <Plus size={16} />
-                    </button>
+                <div className="flex-1 w-full sm:w-auto">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mb-4 sm:mb-0">
+                      <h3 className="font-semibold text-gray-800 text-base sm:text-lg">{item.product.name}</h3>
+                      <p className="text-sm text-gray-600">{item.product.category}</p>
+                      <p className="text-sm text-gray-600">Size: {item.size}</p>
+                      <p className="text-lg font-bold text-purple-600">${item.product.price}</p>
+                    </div>
+                    
+                    <div className="flex items-center justify-between sm:flex-col sm:items-end space-y-0 sm:space-y-3">
+                      <div className="flex items-center border border-gray-300 rounded-lg">
+                        <button
+                          onClick={() => {
+                            const maxStock = item.product.stock?.[item.size] || 0;
+                            handleQuantityChange(item.productId, item.size, item.quantity - 1, maxStock);
+                          }}
+                          className="p-3 hover:bg-gray-100 transition-colors touch-manipulation"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="px-4 py-3 font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => {
+                            const maxStock = item.product.stock?.[item.size] || 0;
+                            handleQuantityChange(item.productId, item.size, item.quantity + 1, maxStock);
+                          }}
+                          className="p-3 hover:bg-gray-100 transition-colors touch-manipulation"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 sm:space-x-0 sm:flex-col sm:items-end">
+                        <div className="text-xs text-gray-500 sm:mb-2">
+                          Stock: {item.product.stock?.[item.size] || 0}
+                        </div>
+                        
+                        <button
+                          onClick={() => removeItem(item.productId, item.size)}
+                          className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors touch-manipulation"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="text-xs text-gray-500">
-                    Stock: {item.product.stock?.[item.size] || 0}
-                  </div>
-                  
-                  <button
-                    onClick={() => removeItem(item.productId, item.size)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
               </div>
             </div>
@@ -139,10 +145,10 @@ const Cart: React.FC = () => {
         </div>
         
         {/* Order Summary */}
-        <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Order Summary</h2>
+        <div className="card h-fit">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4">Order Summary</h2>
           
-          <div className="space-y-3 mb-6">
+          <div className="space-y-3 mb-4 sm:mb-6">
             <div className="flex justify-between">
               <span>Items ({totalItems})</span>
               <span>${totalPrice.toFixed(2)}</span>
@@ -161,14 +167,14 @@ const Cart: React.FC = () => {
           
           <Link
             to="/checkout"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 text-center block"
+            className="btn-primary w-full text-center block mb-3"
           >
             Proceed to Checkout
           </Link>
           
           <Link
             to="/products"
-            className="w-full mt-3 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-center block"
+            className="btn-secondary w-full text-center block"
           >
             Continue Shopping
           </Link>
