@@ -348,8 +348,12 @@ const ProductDetail: React.FC = () => {
           )}
         </div>
 
-        {/* Review Form */}
+
+        {/* Review Form  worsk
+        */}
         {showReviewForm && (
+
+
           <form onSubmit={handleSubmitReview} className="bg-gray-50 p-6 rounded-lg mb-8">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
@@ -364,8 +368,7 @@ const ProductDetail: React.FC = () => {
                     <Star
                       className={`${
                         rating <= reviewData.rating
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
+                          ? 'text-yellow-400 fill-current': 'text-gray-300'
                       }`}
                     />
                   </button>
