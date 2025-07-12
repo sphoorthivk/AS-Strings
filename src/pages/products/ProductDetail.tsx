@@ -48,7 +48,12 @@ const ProductDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      showToast('Please select a size', 'warning');
+      showToast('Please select a size before adding to cart', 'warning');
+      return;
+    }
+    
+    if (!product.sizes || product.sizes.length === 0) {
+      showToast('This product has no available sizes', 'error');
       return;
     }
     
@@ -165,9 +170,9 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Size Selection */}
-          {product.sizes && product.sizes.length > 0 && (
+          {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold mb-3">Size</h3>
+              <h3 className="text-lg font-semibold mb-3">Size *</h3>
               <div className="grid grid-cols-4 gap-3">
                 {product.sizes.map((size: string) => {
                   const stock = product.stock?.[size] || 0;
@@ -180,7 +185,7 @@ const ProductDetail: React.FC = () => {
                       disabled={!isAvailable}
                       className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
                         selectedSize === size
-                          ? 'border-purple-600 bg-purple-50 text-purple-600'
+                          ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
                           : isAvailable
                           ? 'border-gray-300 hover:border-gray-400'
                           : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -192,6 +197,9 @@ const ProductDetail: React.FC = () => {
                   );
                 })}
               </div>
+              {!selectedSize && (
+                <p className="text-sm text-red-600 mt-2">* Please select a size</p>
+              )}
             </div>
           )}
 
@@ -225,7 +233,7 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
           {/* Accessories Selection */}
-          {product.accessories && product.accessories.length > 0 && (
+          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">Available Accessories</h3>
               <div className="space-y-3">

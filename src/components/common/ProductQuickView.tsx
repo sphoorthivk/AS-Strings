@@ -30,7 +30,12 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      showToast('Please select a size', 'warning');
+      showToast('Please select a size before adding to cart', 'warning');
+      return;
+    }
+    
+    if (!product.sizes || product.sizes.length === 0) {
+      showToast('This product has no available sizes', 'error');
       return;
     }
     
@@ -143,9 +148,9 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               </div>
 
               {/* Size Selection */}
-              {product.sizes && product.sizes.length > 0 && (
+              {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-3">Size</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">Size *</h3>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {product.sizes.map((size: string) => {
                       const stock = product.stock?.[size] || 0;
@@ -158,7 +163,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                           disabled={!isAvailable}
                           className={`py-3 px-3 border rounded-lg font-medium transition-colors text-sm touch-manipulation ${
                             selectedSize === size
-                              ? 'border-purple-600 bg-purple-50 text-purple-600'
+                              ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
                               : isAvailable
                               ? 'border-gray-300 hover:border-gray-400'
                               : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -170,6 +175,9 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
                       );
                     })}
                   </div>
+                  {!selectedSize && (
+                    <p className="text-sm text-red-600 mt-2">* Please select a size</p>
+                  )}
                 </div>
               )}
 
@@ -204,7 +212,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
               </div>
 
               {/* Accessories Selection */}
-              {product.accessories && product.accessories.length > 0 && (
+              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">Available Accessories</h3>
                   <div className="space-y-2">
