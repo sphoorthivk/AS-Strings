@@ -5,6 +5,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ordersAPI } from '../../services/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -12,10 +13,11 @@ const Checkout: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [shippingCost, setShippingCost] = useState(0);
   const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    phone: user?.phone || '',
+    fullName: '',
+    phone: '',
     street: '',
     city: '',
     state: '',
@@ -33,63 +35,134 @@ const Checkout: React.FC = () => {
   ];
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
+    // Initialize form data with user info if available
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.name || '',
+        phone: user.phone || ''
+      }));
     }
     
-    if (items.length === 0) {
-      navigate('/cart');
-      return;
-    }
-  }, [user, items, navigate]);
-
-  useEffect(() => {
-    calculateShippingCost();
-  }, [formData.city, formData.state, totalPrice]);
-
-  const calculateShippingCost = () => {
-    const city = formData.city.toLowerCase();
-    const state = formData.state.toLowerCase();
-    
-    // Free shipping for orders over $100
-    if (totalPrice >= 100) {
-      setShippingCost(0);
-      return;
-    }
-
-    // Find matching delivery zone
-    for (const zone of deliveryZones) {
-      if (zone.keywords.some(keyword => city.includes(keyword) || state.includes(keyword))) {
-        setShippingCost(zone.rate);
+    // Check if user is logged in and has items in cart
+    const timer = setTimeout(() => {
+      if (!user) {
+        showToast('Please login to proceed with checkout', 'warning');
+        navigate('/login');
         return;
       }
+      
+      if (!items || items.length === 0) {
+        showToast('Your cart is empty', 'warning');
+        navigate('/cart');
+        return;
+      }
+      
+      setPageLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [user, items, navigate, showToast]);
+
+  useEffect(() => {
+    if (!pageLoading) {
+      calculateShippingCost();
     }
-    
-    // Default to remote area rate
-    setShippingCost(deliveryZones[deliveryZones.length - 1].rate);
+  }, [formData.city, formData.state, totalPrice, pageLoading]);
+
+  const calculateShippingCost = () => {
+    try {
+      const city = formData.city.toLowerCase();
+      const state = formData.state.toLowerCase();
+      
+      // Free shipping for orders over $100
+      if (totalPrice >= 100) {
+        setShippingCost(0);
+        return;
+      }
+
+      // Find matching delivery zone
+      for (const zone of deliveryZones) {
+        if (zone.keywords.some(keyword => city.includes(keyword) || state.includes(keyword))) {
+          setShippingCost(zone.rate);
+          return;
+        }
+      }
+      
+      // Default to remote area rate
+      setShippingCost(deliveryZones[deliveryZones.length - 1].rate);
+    } catch (error) {
+      console.error('Error calculating shipping cost:', error);
+      setShippingCost(25); // Default shipping cost
+    }
+  };
+
+  const getProductImageUrl = (product: any) => {
+    try {
+      // Check for media array first (new format)
+      if (product.media && product.media.length > 0) {
+        const media = product.media[0];
+        if (typeof media === 'string') {
+          if (media.startsWith('http') || media.startsWith('data:')) {
+            return media;
+          }
+          return `http://localhost:5000/api/upload/media/${media}`;
+        }
+        if (media && typeof media === 'object') {
+          if (media.dataUrl) return media.dataUrl;
+          if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+        }
+      }
+      
+      // Check for images array (legacy format)
+      if (product.images && product.images.length > 0) {
+        const image = product.images[0];
+        if (image.startsWith('http') || image.startsWith('data:')) {
+          return image;
+        }
+        return `http://localhost:5000/api/upload/images/${image}`;
+      }
+      
+      // Fallback to placeholder
+      return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+    } catch (error) {
+      console.error('Error getting product image URL:', error);
+      return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateForm = () => {
+    const requiredFields = ['fullName', 'phone', 'street', 'city', 'state', 'zipCode'];
     
-    // Validate form data
-    if (!formData.fullName || !formData.phone || !formData.street || !formData.city || !formData.state || !formData.zipCode) {
-      showToast('Please fill in all required fields', 'error');
-      return;
+    for (const field of requiredFields) {
+      if (!formData[field as keyof typeof formData]?.trim()) {
+        showToast(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`, 'error');
+        return false;
+      }
     }
     
     // Validate phone number
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
     if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
       showToast('Please enter a valid phone number', 'error');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
     
@@ -104,19 +177,21 @@ const Checkout: React.FC = () => {
           accessories: item.accessories || []
         })),
         shippingAddress: {
-          fullName: formData.fullName,
-          phone: formData.phone,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
+          fullName: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          street: formData.street.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim(),
+          zipCode: formData.zipCode.trim(),
           country: formData.country
         },
         paymentMethod: formData.paymentMethod,
         shippingCost: shippingCost
       };
 
+      console.log('Placing order with data:', orderData);
       const response = await ordersAPI.createOrder(orderData);
+      
       clearCart();
       showToast('Order placed successfully!', 'success');
       navigate(`/order-confirmation/${response.data._id}`);
@@ -129,50 +204,56 @@ const Checkout: React.FC = () => {
     }
   };
 
-  const getProductImageUrl = (product: any) => {
-    // Check for media array first (new format)
-    if (product.media && product.media.length > 0) {
-      const media = product.media[0];
-      if (typeof media === 'string') {
-        if (media.startsWith('http') || media.startsWith('data:')) {
-          return media;
-        }
-        return `http://localhost:5000/api/upload/media/${media}`;
-      }
-      if (media && typeof media === 'object') {
-        if (media.dataUrl) return media.dataUrl;
-        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
-      }
-    }
-    
-    // Check for images array (legacy format)
-    if (product.images && product.images.length > 0) {
-      const image = product.images[0];
-      if (image.startsWith('http') || image.startsWith('data:')) {
-        return image;
-      }
-      return `http://localhost:5000/api/upload/images/${image}`;
-    }
-    
-    // Fallback to placeholder
-    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
-  };
-
-  const finalTotal = totalPrice + shippingCost;
-
   // Show loading state while checking auth/cart
-  if (!user || items.length === 0) {
+  if (pageLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading checkout...</p>
+            <LoadingSpinner size="large" />
+            <p className="text-gray-600 mt-4">Loading checkout...</p>
           </div>
         </div>
       </div>
     );
   }
+
+  // This should not render if redirects are working properly
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Please Login</h1>
+          <p className="text-gray-600 mb-6">You need to be logged in to proceed with checkout.</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Cart is Empty</h1>
+          <p className="text-gray-600 mb-6">Add some items to your cart before proceeding to checkout.</p>
+          <button
+            onClick={() => navigate('/products')}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const finalTotal = totalPrice + shippingCost;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -202,6 +283,7 @@ const Checkout: React.FC = () => {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="Enter your full name"
                   />
                 </div>
                 
@@ -217,6 +299,7 @@ const Checkout: React.FC = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="+1 234 567 8900"
                   />
                 </div>
               </div>
@@ -247,6 +330,7 @@ const Checkout: React.FC = () => {
                     value={formData.city}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="Enter city"
                   />
                 </div>
                 
@@ -259,6 +343,7 @@ const Checkout: React.FC = () => {
                     value={formData.state}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="Enter state"
                   />
                 </div>
                 
@@ -271,6 +356,7 @@ const Checkout: React.FC = () => {
                     value={formData.zipCode}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    placeholder="Enter ZIP code"
                   />
                 </div>
               </div>
@@ -334,9 +420,10 @@ const Checkout: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
             >
-              {loading ? 'Placing Order...' : 'Place Order'}
+              {loading && <LoadingSpinner size="small" />}
+              <span>{loading ? 'Placing Order...' : 'Place Order'}</span>
             </button>
           </form>
         </div>
