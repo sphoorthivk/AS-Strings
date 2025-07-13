@@ -139,7 +139,7 @@ const FeaturedProducts: React.FC = () => {
                   </div>
 
                   {/* Add accessories display */}
-                  {product.accessories && product.accessories.length > 0 && (
+                  {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                     <div className="mb-3">
                       <div className="text-xs text-gray-500 font-medium mb-1">Available Accessories:</div>
                       <div className="flex flex-wrap gap-1">

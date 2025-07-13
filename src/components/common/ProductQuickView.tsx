@@ -213,7 +213,7 @@ const handleAddToCart = () => {
               </div>
 
               {/* Accessories Selection */}
-              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">
                     Available Accessories
@@ -287,7 +287,7 @@ const handleAddToCart = () => {
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
               {/* Action Buttons */}
               <div className="space-y-3 sm:space-y-4">
                 <button

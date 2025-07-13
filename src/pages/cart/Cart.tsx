@@ -129,7 +129,7 @@ const Cart: React.FC = () => {
                       <h3 className="font-semibold text-gray-800 text-base sm:text-lg">{item.product.name}</h3>
                       <p className="text-sm text-gray-600">{item.product.category}</p>
                       <p className="text-sm text-gray-600">Size: {item.size}</p>
-                      {item.accessories && item.accessories.length > 0 && (
+                      {item.accessories && Array.isArray(item.accessories) && item.accessories.length > 0 && (
                         <div className="text-sm text-gray-600 mt-1">
                           <span className="font-medium">Accessories:</span>
                           <div className="ml-2 mt-1 space-y-1">
