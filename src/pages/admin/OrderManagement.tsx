@@ -29,6 +29,36 @@ const OrderManagement: React.FC = () => {
     fetchOrders();
   }, [currentPage, statusFilter, searchTerm]);
 
+  // Helper function to get product image URL
+  const getProductImageUrl = (product: any) => {
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+  };
+
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -347,37 +377,45 @@ const OrderManagement: React.FC = () => {
                     {selectedOrder.items?.map((item: any, index: number) => (
                       <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
                         <img
-                          src={item.product?.images?.[0]}
+                          src={getProductImageUrl(item.product)}
                           alt={item.product?.name}
                           className="w-16 h-16 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                          }}
                         />
                         <div className="flex-1">
                           <h4 className="font-medium">{item.product?.name}</h4>
                           <p className="text-sm text-gray-600">Size: {item.size}</p>
                           <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                           {item.accessories && item.accessories.length > 0 && (
-                            <div className="text-sm text-gray-600 mt-1">
+                            <div className="text-sm text-gray-600 mt-2">
                               <span className="font-medium">Accessories:</span>
-                              <div className="ml-2 mt-1">
-                                {item.accessories.map((accessory, index) => (
-                                  <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200 mb-1">
+                              <div className="ml-2 mt-2 space-y-2">
+                                {item.accessories.map((accessory: any, index: number) => (
+                                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                                     <div className="flex items-center">
-                                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                      <span className="font-medium text-blue-700 text-xs">{accessory.name}</span>
+                                      <span className="w-3 h-3 bg-purple-500 rounded-full mr-3"></span>
+                                      <span className="font-medium text-gray-700">{accessory.name}</span>
                                     </div>
-                                    <span className="text-blue-600 font-medium text-xs">
+                                    <span className="font-medium">
                                       {accessory.price === 0 ? (
-                                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">Free</span>
+                                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Free</span>
                                       ) : (
-                                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">+$${accessory.price}</span>
+                                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">+${accessory.price}</span>
                                       )}
                                     </span>
                                   </div>
                                 ))}
-                                <div className="text-xs text-blue-600 font-medium mt-1 bg-blue-100 p-2 rounded">
-                                  ✓ Customer selected {item.accessories.length} accessory/accessories
-                                  <br />
-                                  Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                                <div className="bg-purple-50 border border-purple-200 p-3 rounded-lg">
+                                  <div className="text-sm font-medium text-purple-800">
+                                    ✓ Customer Selected Accessories Summary:
+                                  </div>
+                                  <div className="text-sm text-purple-700 mt-1">
+                                    • {item.accessories.length} accessory/accessories chosen
+                                    • Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                                  </div>
                                 </div>
                               </div>
                             </div>
