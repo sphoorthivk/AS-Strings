@@ -34,6 +34,13 @@ const ProductDetail: React.FC = () => {
     try {
       setLoading(true);
       const response = await productsAPI.getProduct(id!);
+      console.log('=== FRONTEND PRODUCT DEBUG ===');
+      console.log('Full product data:', response.data);
+      console.log('Product accessories:', response.data.accessories);
+      console.log('Accessories type:', typeof response.data.accessories);
+      console.log('Accessories is array:', Array.isArray(response.data.accessories));
+      console.log('Accessories length:', response.data.accessories?.length);
+      console.log('=== END FRONTEND DEBUG ===');
       setProduct(response.data);
       
       if (response.data.sizes?.length > 0) {
@@ -240,6 +247,21 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Accessories Selection */}
+          {/* Debug: Show raw accessories data */}
+          {product && (
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              <h4 className="font-medium text-yellow-800 mb-2">Debug: Accessories Data</h4>
+              <pre className="text-xs text-yellow-700 overflow-auto">
+                {JSON.stringify(product.accessories, null, 2)}
+              </pre>
+              <div className="text-sm text-yellow-700 mt-2">
+                <p>Type: {typeof product.accessories}</p>
+                <p>Is Array: {Array.isArray(product.accessories).toString()}</p>
+                <p>Length: {product.accessories?.length || 'undefined'}</p>
+              </div>
+            </div>
+          )}
+          
           {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">
