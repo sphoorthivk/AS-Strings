@@ -82,7 +82,7 @@ const About: React.FC = () => {
                 <h2 className="text-3xl font-bold text-gray-800 mb-6">Our Story</h2>
                 <div className="space-y-4 text-gray-600">
                   <p>
-                    Founded in 2025, AS Shreds started as a small startup with a big dream - to make 
+                    Founded in 2025, AS Shreads started as a small startup with a big dream - to make 
                     quality fashion accessible to everyone across India. What began as a passion project 
                     has grown into a trusted platform serving thousands of customers nationwide.
                   </p>

@@ -9,10 +9,10 @@ const SimpleLanding: React.FC = () => {
         {/* Logo */}
         <div className="mb-8">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-lg">AS</span>
+            <span className="text-white font-bold text-2xl">F</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
-            AS Shreads
+            FashionHub
           </h1>
         </div>
 
@@ -40,7 +40,7 @@ const SimpleLanding: React.FC = () => {
         {/* Social Media Icons */}
         <div className="flex justify-center space-x-6">
           <a
-            href="https://www.instagram.com/shreadslife?igsh=MWljMnZleHFqd245eQ=="
+            href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
@@ -52,7 +52,7 @@ const SimpleLanding: React.FC = () => {
           </a>
           
           <a
-            href="https://wa.me/919876543210"
+            href="https://wa.me/1234567890"
             target="_blank"
             rel="noopener noreferrer"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
@@ -64,7 +64,7 @@ const SimpleLanding: React.FC = () => {
           </a>
           
           <a
-            href="mailto:shreadslife@gmail.com"
+            href="mailto:contact@fashionhub.com"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
           >
             <Mail 
@@ -84,3 +84,4 @@ const SimpleLanding: React.FC = () => {
 };
 
 export default SimpleLanding;
+
