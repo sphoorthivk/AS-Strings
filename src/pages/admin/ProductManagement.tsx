@@ -553,7 +553,7 @@ const ProductManagement: React.FC = () => {
                             </span>
                           )}
                           {/* Add accessories display */}
-                          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+                          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
                             <div className="mt-1">
                               <span className="text-xs text-gray-500 font-medium">Available Accessories:</span>
                               <div className="flex flex-wrap gap-1 mt-2">
@@ -575,6 +575,10 @@ const ProductManagement: React.FC = () => {
                               <div className="text-xs text-gray-500 mt-1">
                                 Customers can select these accessories when purchasing
                               </div>
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-xs text-gray-400">
+                              Debug Admin: No accessories found. Data: {JSON.stringify(product.accessories)}
                             </div>
                           )}
 

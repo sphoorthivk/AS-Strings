@@ -26,7 +26,14 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       setSelectedSize(product.sizes[0]);
     }
     setSelectedAccessories([]);
-    console.log('ProductQuickView - Product accessories:', product?.accessories);
+    console.log('ProductQuickView - Product accessories debug:', {
+      productName: product?.name,
+      accessories: product?.accessories,
+      accessoriesType: typeof product?.accessories,
+      accessoriesLength: product?.accessories ? product?.accessories.length : 0,
+      accessoriesIsArray: Array.isArray(product?.accessories),
+      fullProduct: product
+    });
   }, [product]);
 
 const handleAddToCart = () => {
@@ -214,7 +221,7 @@ const handleAddToCart = () => {
               </div>
 
               {/* Accessories Selection */}
-              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">
                     Available Accessories
@@ -222,8 +229,8 @@ const handleAddToCart = () => {
                       ({selectedAccessories.length} selected)
                     </span>
                   </h3>
-                  <div className="mb-2 text-xs text-gray-600">
-                    Debug: Found {product.accessories.length} accessories
+                  <div className="mb-2 text-xs text-purple-600 bg-purple-50 p-2 rounded">
+                    Debug: Found {product.accessories.length} accessories - {JSON.stringify(product.accessories)}
                   </div>
                   <div className="space-y-2">
                     {product.accessories.map((accessory: any) => (
@@ -290,6 +297,10 @@ const handleAddToCart = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              ) : (
+                <div className="mb-2 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                  Debug: No accessories found. Product accessories: {JSON.stringify(product.accessories)}
                 </div>
               )}
               {/* Action Buttons */}

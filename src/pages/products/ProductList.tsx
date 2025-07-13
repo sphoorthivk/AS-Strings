@@ -289,10 +289,10 @@ const ProductList: React.FC = () => {
         </div>
         
         {/* Add accessories preview */}
-        {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+        {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
           <div className="mt-3">
             <div className="text-xs text-gray-500 font-medium mb-1">Available Accessories:</div>
-            <div className="text-xs text-gray-400 mb-1">Debug: {product.accessories.length} accessories found</div>
+            <div className="text-xs text-purple-600 mb-1">Debug: {product.accessories.length} accessories - {JSON.stringify(product.accessories)}</div>
             <div className="flex flex-wrap gap-1">
               {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
                 <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full border border-purple-200">
@@ -307,6 +307,10 @@ const ProductList: React.FC = () => {
                 </span>
               )}
             </div>
+          </div>
+        ) : (
+          <div className="mt-2 text-xs text-gray-400">
+            Debug: No accessories. Data: {JSON.stringify(product.accessories)}
           </div>
         )}
       </div>

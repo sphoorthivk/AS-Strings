@@ -35,7 +35,13 @@ const ProductDetail: React.FC = () => {
       setLoading(true);
       const response = await productsAPI.getProduct(id!);
       setProduct(response.data);
-      console.log('ProductDetail - Fetched product with accessories:', response.data.accessories);
+      console.log('ProductDetail - Full product data:', {
+        name: response.data.name,
+        accessories: response.data.accessories,
+        accessoriesType: typeof response.data.accessories,
+        accessoriesLength: response.data.accessories ? response.data.accessories.length : 0,
+        accessoriesIsArray: Array.isArray(response.data.accessories)
+      });
       if (response.data.sizes?.length > 0) {
         setSelectedSize(response.data.sizes[0]);
       }
@@ -242,7 +248,7 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
           {/* Accessories Selection */}
-          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
+          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">
                 Available Accessories 
@@ -250,6 +256,9 @@ const ProductDetail: React.FC = () => {
                   ({selectedAccessories.length} selected)
                 </span>
               </h3>
+              <div className="mb-2 text-xs text-purple-600 bg-purple-50 p-2 rounded">
+                Debug: Found {product.accessories.length} accessories - {JSON.stringify(product.accessories)}
+              </div>
               <div className="space-y-3">
                 {product.accessories.map((accessory: any) => (
                   <label key={accessory.id} className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -332,7 +341,7 @@ const ProductDetail: React.FC = () => {
                 </div>
               )}
             </div>
-          ) : null}
+          )}
 
           {/* Action Buttons */}
           <div className="space-y-4">

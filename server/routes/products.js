@@ -91,6 +91,12 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    console.log('Fetched product accessories for frontend:', {
+      productId: product._id,
+      productName: product.name,
+      accessories: product.accessories,
+      accessoriesCount: product.accessories ? product.accessories.length : 0
+    });
     res.json(product);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -171,6 +177,7 @@ router.post('/', adminAuth, async (req, res) => {
     await product.save();
     
     console.log('Product created with ID:', product._id);
+    console.log('Product accessories saved:', product.accessories);
     
     // Update media references with product ID
     if (productData.media && productData.media.length > 0) {
@@ -187,6 +194,12 @@ router.post('/', adminAuth, async (req, res) => {
     }
     
     await product.populate('media');
+    console.log('Final product with populated media and accessories:', {
+      id: product._id,
+      name: product.name,
+      accessories: product.accessories,
+      media: product.media
+    });
     console.log('Product creation successful');
     res.status(201).json(product);
   } catch (error) {
