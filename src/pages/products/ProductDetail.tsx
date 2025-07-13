@@ -247,21 +247,6 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Accessories Selection */}
-          {/* Debug: Show raw accessories data */}
-          {product && (
-            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-              <h4 className="font-medium text-yellow-800 mb-2">Debug: Accessories Data</h4>
-              <pre className="text-xs text-yellow-700 overflow-auto">
-                {JSON.stringify(product.accessories, null, 2)}
-              </pre>
-              <div className="text-sm text-yellow-700 mt-2">
-                <p>Type: {typeof product.accessories}</p>
-                <p>Is Array: {Array.isArray(product.accessories).toString()}</p>
-                <p>Length: {product.accessories?.length || 'undefined'}</p>
-              </div>
-            </div>
-          )}
-          
           {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-3">
@@ -270,6 +255,9 @@ const ProductDetail: React.FC = () => {
                   ({selectedAccessories.length} selected)
                 </span>
               </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Enhance your purchase with these optional accessories:
+              </p>
               <div className="space-y-3">
                 {product.accessories.map((accessory: any) => (
                   <label key={accessory.id} className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -351,6 +339,15 @@ const ProductDetail: React.FC = () => {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+          
+          {/* Show message if no accessories */}
+          {(!product.accessories || !Array.isArray(product.accessories) || product.accessories.length === 0) && (
+            <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+              <p className="text-gray-600 text-center">
+                No accessories available for this product.
+              </p>
             </div>
           )}
 

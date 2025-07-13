@@ -66,6 +66,7 @@ router.get('/', async (req, res) => {
       .skip((page - 1) * limit)
       .populate('reviews.user', 'name')
       .populate('media');
+      .lean(); // Use lean() for better performance and to ensure we get plain objects
 
     const total = await Product.countDocuments(filter);
 
@@ -77,6 +78,7 @@ router.get('/', async (req, res) => {
         console.log(`  Accessories:`, product.accessories);
         console.log(`  Accessories type:`, typeof product.accessories);
         console.log(`  Accessories length:`, product.accessories ? product.accessories.length : 'undefined');
+        console.log(`  Raw accessories data:`, JSON.stringify(product.accessories));
       }
     });
     console.log('=== END PRODUCTS LIST FETCH DEBUG ===');
@@ -97,7 +99,8 @@ router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate('reviews.user', 'name')
-      .populate('media');
+      .populate('media')
+      .lean(); // Use lean() to get plain objects
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -110,12 +113,11 @@ router.get('/:id', async (req, res) => {
     console.log('Accessories type:', typeof product.accessories);
     console.log('Accessories is array:', Array.isArray(product.accessories));
     console.log('Accessories length:', product.accessories ? product.accessories.length : 'undefined');
-    console.log('Full product object keys:', Object.keys(product.toObject()));
+    console.log('Full product object keys:', Object.keys(product));
+    console.log('Complete accessories data:', JSON.stringify(product.accessories, null, 2));
     
-    // Ensure accessories are properly formatted
-    const productObj = product.toObject();
-    if (productObj.accessories && Array.isArray(productObj.accessories)) {
-      console.log('Accessories found and properly formatted:', productObj.accessories);
+    if (product.accessories && Array.isArray(product.accessories)) {
+      console.log('Accessories found and properly formatted:', product.accessories);
     } else {
       console.log('Accessories not found or not an array');
     }
