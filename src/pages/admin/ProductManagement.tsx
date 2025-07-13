@@ -335,6 +335,9 @@ const ProductManagement: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Products</p>
                 <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {products.filter(p => p.accessories?.length > 0).length} with accessories
+                </p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg">
                 <Package size={24} className="text-blue-600" />
@@ -348,6 +351,9 @@ const ProductManagement: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600">Active Products</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {products.filter(p => p.isActive).length}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {products.filter(p => p.isActive && p.accessories?.length > 0).length} active with accessories
                 </p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
@@ -363,6 +369,9 @@ const ProductManagement: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {products.filter(p => p.featured).length}
                 </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {products.filter(p => p.featured && p.accessories?.length > 0).length} featured with accessories
+                </p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg">
                 <Package size={24} className="text-purple-600" />
@@ -373,8 +382,13 @@ const ProductManagement: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Categories</p>
-                <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+                <p className="text-sm font-medium text-gray-600">Total Accessories</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {products.reduce((sum, p) => sum + (p.accessories?.length || 0), 0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Across {categories.length} categories
+                </p>
               </div>
               <div className="p-3 bg-yellow-50 rounded-lg">
                 <Package size={24} className="text-yellow-600" />
@@ -448,6 +462,9 @@ const ProductManagement: React.FC = () => {
                       Stock
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Accessories
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -472,6 +489,10 @@ const ProductManagement: React.FC = () => {
                           <div>
                             <div className="text-sm font-medium text-gray-900">{product.name}</div>
                             <div className="text-sm text-gray-500">{product.gender}</div>
+                            {/* Show media count */}
+                            <div className="text-xs text-gray-400 mt-1">
+                              {product.media?.length || 0} media files
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -486,6 +507,45 @@ const ProductManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {Object.values(product.stock || {}).reduce((sum: number, stock: any) => sum + stock, 0)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="max-w-xs">
+                          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
+                            <div className="space-y-1">
+                              <div className="text-xs font-medium text-gray-700">
+                                {product.accessories.length} accessory/accessories:
+                              </div>
+                              <div className="space-y-1">
+                                {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
+                                  <div key={index} className="flex items-center justify-between text-xs bg-purple-50 px-2 py-1 rounded border border-purple-200">
+                                    <span className="font-medium text-purple-800 truncate mr-2">
+                                      {accessory.name}
+                                    </span>
+                                    <span className="text-purple-600 font-medium whitespace-nowrap">
+                                      {accessory.price === 0 ? (
+                                        <span className="bg-green-100 text-green-700 px-1 py-0.5 rounded text-xs">Free</span>
+                                      ) : (
+                                        <span className="bg-purple-100 text-purple-700 px-1 py-0.5 rounded text-xs">+${accessory.price}</span>
+                                      )}
+                                    </span>
+                                  </div>
+                                ))}
+                                {product.accessories.length > 2 && (
+                                  <div className="text-xs text-purple-600 font-medium bg-purple-100 px-2 py-1 rounded text-center">
+                                    +{product.accessories.length - 2} more accessories
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Total value: +${product.accessories.reduce((sum: number, acc: any) => sum + (acc.price || 0), 0).toFixed(2)}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-gray-400 italic">
+                              No accessories
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">
@@ -508,12 +568,14 @@ const ProductManagement: React.FC = () => {
                           <button
                             onClick={() => handleEdit(product)}
                             className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-100 transition-colors"
+                            title="Edit Product"
                           >
                             <Edit size={16} />
                           </button>
                           <button
                             onClick={() => handleDelete(product._id, product.name)}
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-100 transition-colors"
+                            title="Delete Product"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -757,7 +819,7 @@ const ProductManagement: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-medium text-gray-700">
-                      Product Accessories
+                      Product Accessories ({formData.accessories.length})
                     </label>
                     <button
                       type="button"
@@ -768,35 +830,99 @@ const ProductManagement: React.FC = () => {
                     </button>
                   </div>
                   
+                  <div className="text-sm text-gray-600 mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="font-medium text-blue-800 mb-1">💡 Accessories Help:</div>
+                    <ul className="text-xs space-y-1 text-blue-700">
+                      <li>• Add optional accessories that customers can purchase with this product</li>
+                      <li>• Set price to 0 for free accessories (e.g., care instructions, warranty)</li>
+                      <li>• Accessories will be shown during product selection and checkout</li>
+                      <li>• Each accessory needs a unique name and price</li>
+                    </ul>
+                  </div>
+                  
                   {formData.accessories.length > 0 && (
                     <div className="space-y-3">
+                      <div className="text-sm font-medium text-gray-700 mb-2">
+                        Current Accessories ({formData.accessories.length}):
+                      </div>
                       {formData.accessories.map((accessory, index) => (
-                        <div key={index} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+                        <div key={index} className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
+                          <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <span className="text-purple-600 font-medium text-sm">{index + 1}</span>
+                          </div>
                           <input
                             type="text"
-                            placeholder="Accessory name"
+                            placeholder="Accessory name (e.g., Premium Care Kit)"
                             value={accessory.name}
                             onChange={(e) => updateAccessory(index, 'name', e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-600"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                           />
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">$</span>
                           <input
                             type="number"
                             step="0.01"
                             min="0"
-                            placeholder="Price"
+                              placeholder="0.00"
                             value={accessory.price}
                             onChange={(e) => updateAccessory(index, 'price', parseFloat(e.target.value) || 0)}
-                            className="w-24 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-600"
+                              className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-center"
                           />
+                          </div>
+                          <div className="flex-shrink-0">
+                            {accessory.price === 0 ? (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                Free
+                              </span>
+                            ) : (
+                              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                +${accessory.price}
+                              </span>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() => removeAccessory(index)}
-                            className="text-red-600 hover:text-red-800 p-1"
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                            title="Remove accessory"
                           >
                             <Trash2 size={16} />
                           </button>
                         </div>
                       ))}
+                      
+                      {/* Accessories Summary */}
+                      <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                        <div className="text-sm font-medium text-purple-800 mb-2">
+                          Accessories Summary:
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="text-purple-700">Total Accessories:</span>
+                            <span className="font-medium ml-2">{formData.accessories.length}</span>
+                          </div>
+                          <div>
+                            <span className="text-purple-700">Free Accessories:</span>
+                            <span className="font-medium ml-2">
+                              {formData.accessories.filter(acc => acc.price === 0).length}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-purple-700">Total Value:</span>
+                            <span className="font-medium ml-2">
+                              +${formData.accessories.reduce((sum, acc) => sum + (acc.price || 0), 0).toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.accessories.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                      <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-500 font-medium">No accessories added yet</p>
+                      <p className="text-gray-400 text-sm mt-1">Click "Add Accessory" to start adding optional accessories</p>
                     </div>
                   )}
                 </div>
