@@ -288,7 +288,7 @@ const ProductList: React.FC = () => {
         </div>
         
         {/* Add accessories preview */}
-        {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+        {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
           <div className="mt-3">
             <div className="text-xs text-gray-500 font-medium mb-1">Available Accessories:</div>
             <div className="flex flex-wrap gap-1">
@@ -306,7 +306,7 @@ const ProductList: React.FC = () => {
               )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

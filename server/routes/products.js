@@ -60,13 +60,13 @@ router.get('/', async (req, res) => {
       sortOptions.createdAt = -1; // newest first
     }
 
-   const products = await Product.find(filter)
-  .sort(sortOptions)
-  .limit(limit * 1)
-  .skip((page - 1) * limit)
-  .populate('reviews.user', 'name')
-  .populate('media')
-  .lean(); // ✅ now correctly chained
+    const products = await Product.find(filter)
+      .sort(sortOptions)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .populate('reviews.user', 'name')
+      .populate('media')
+      .lean();
 
     const total = await Product.countDocuments(filter);
 
@@ -75,15 +75,23 @@ router.get('/', async (req, res) => {
     products.forEach((product, index) => {
       if (index < 3) { // Only log first 3 products to avoid spam
         console.log(`Product ${index}: ${product.name}`);
-        console.log(`  Accessories:`, product.accessories);
+        console.log(`  Accessories:`, product.accessories || []);
         console.log(`  Accessories type:`, typeof product.accessories);
-        console.log(`  Accessories length:`, product.accessories ? product.accessories.length : 'undefined');
-        console.log(`  Raw accessories data:`, JSON.stringify(product.accessories));
+        console.log(`  Accessories is array:`, Array.isArray(product.accessories));
+        console.log(`  Accessories length:`, product.accessories ? product.accessories.length : 0);
+        console.log(`  Raw accessories data:`, JSON.stringify(product.accessories || []));
       }
     });
     console.log('=== END PRODUCTS LIST FETCH DEBUG ===');
+    
+    // Ensure accessories field exists for all products
+    const processedProducts = products.map(product => ({
+      ...product,
+      accessories: product.accessories || []
+    }));
+    
     res.json({
-      products,
+      products: processedProducts,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total
@@ -100,7 +108,7 @@ router.get('/:id', async (req, res) => {
     const product = await Product.findById(req.params.id)
       .populate('reviews.user', 'name')
       .populate('media')
-      .lean(); // Use lean() to get plain objects
+      .lean();
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -109,29 +117,36 @@ router.get('/:id', async (req, res) => {
     console.log('=== PRODUCT FETCH DEBUG ===');
     console.log('Product ID:', product._id);
     console.log('Product name:', product.name);
-    console.log('Raw product accessories:', product.accessories);
+    console.log('Raw product accessories:', product.accessories || []);
     console.log('Accessories type:', typeof product.accessories);
     console.log('Accessories is array:', Array.isArray(product.accessories));
-    console.log('Accessories length:', product.accessories ? product.accessories.length : 'undefined');
+    console.log('Accessories length:', product.accessories ? product.accessories.length : 0);
     console.log('Full product object keys:', Object.keys(product));
-    console.log('Complete accessories data:', JSON.stringify(product.accessories, null, 2));
+    console.log('Complete accessories data:', JSON.stringify(product.accessories || [], null, 2));
     
     if (product.accessories && Array.isArray(product.accessories)) {
       console.log('Accessories found and properly formatted:', product.accessories);
     } else {
-      console.log('Accessories not found or not an array');
+      console.log('Accessories not found or not an array, setting to empty array');
+      product.accessories = [];
     }
     
     console.log('Sending product to frontend:', {
       productId: product._id,
       productName: product.name,
-      accessories: product.accessories,
+      accessories: product.accessories || [],
       accessoriesCount: product.accessories ? product.accessories.length : 0,
-      fullAccessoriesData: JSON.stringify(product.accessories)
+      fullAccessoriesData: JSON.stringify(product.accessories || [])
     });
     console.log('=== END PRODUCT FETCH DEBUG ===');
     
-    res.json(product);
+    // Ensure accessories field exists
+    const processedProduct = {
+      ...product,
+      accessories: product.accessories || []
+    };
+    
+    res.json(processedProduct);
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -206,13 +221,37 @@ router.post('/', adminAuth, async (req, res) => {
       }
     }
 
+    // Validate and process accessories
+    if (!productData.accessories) {
+      productData.accessories = [];
+    } else if (!Array.isArray(productData.accessories)) {
+      return res.status(400).json({ 
+        message: 'Accessories must be an array' 
+      });
+    } else {
+      // Validate each accessory
+      for (const accessory of productData.accessories) {
+        if (!accessory.id || !accessory.name || typeof accessory.price !== 'number') {
+          return res.status(400).json({ 
+            message: 'Each accessory must have id, name, and price' 
+          });
+        }
+        if (accessory.price < 0) {
+          return res.status(400).json({ 
+            message: 'Accessory price cannot be negative' 
+          });
+        }
+      }
+    }
     console.log('Validated product data:', productData);
+    console.log('Accessories being saved:', productData.accessories);
     
     const product = new Product(productData);
     await product.save();
     
     console.log('Product created with ID:', product._id);
-    console.log('Product accessories saved:', product.accessories);
+    console.log('Product accessories saved:', product.accessories || []);
+    console.log('Accessories count:', product.accessories ? product.accessories.length : 0);
     
     // Update media references with product ID
     if (productData.media && productData.media.length > 0) {
@@ -232,7 +271,7 @@ router.post('/', adminAuth, async (req, res) => {
     console.log('Final product with populated media and accessories:', {
       id: product._id,
       name: product.name,
-      accessories: product.accessories,
+      accessories: product.accessories || [],
       media: product.media
     });
     console.log('Product creation successful');

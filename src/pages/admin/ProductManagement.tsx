@@ -316,11 +316,12 @@ const ProductManagement: React.FC = () => {
     }
 
     const accessory: Accessory = {
-      id: Date.now().toString(),
+      id: `acc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: newAccessory.name.trim(),
       price: price,
     };
 
+    console.log('Adding accessory:', accessory);
     setFormData({
       ...formData,
       accessories: [...formData.accessories, accessory]
@@ -577,8 +578,8 @@ const ProductManagement: React.FC = () => {
                               </div>
                             </div>
                           ) : (
-                            <div className="mt-1 text-xs text-gray-400">
-                              Debug Admin: No accessories found. Data: {JSON.stringify(product.accessories)}
+                            <div className="mt-1 text-xs text-gray-500">
+                              No accessories available for this product
                             </div>
                           )}
 

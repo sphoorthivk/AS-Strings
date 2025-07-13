@@ -343,13 +343,14 @@ const ProductDetail: React.FC = () => {
           )}
           
           {/* Show message if no accessories */}
-          {(!product.accessories || !Array.isArray(product.accessories) || product.accessories.length === 0) && (
+          {(!product.accessories || !Array.isArray(product.accessories) || product.accessories.length === 0) ? (
             <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Accessories</h3>
               <p className="text-gray-600 text-center">
                 No accessories available for this product.
               </p>
             </div>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
           <div className="space-y-4">

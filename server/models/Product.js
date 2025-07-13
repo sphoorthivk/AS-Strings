@@ -71,18 +71,23 @@ const productSchema = new mongoose.Schema({
   accessories: [{
     id: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     name: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     price: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
+      default: 0
     }
   }],
+  // Set default empty array for accessories
+  default: []
   rating: {
     type: Number,
     default: 0,
