@@ -166,6 +166,13 @@ const Checkout: React.FC = () => {
       return;
     }
     
+    // Additional validation for cart items
+    if (!items || items.length === 0) {
+      showToast('Your cart is empty', 'error');
+      navigate('/cart');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -174,7 +181,8 @@ const Checkout: React.FC = () => {
           productId: item.productId,
           size: item.size,
           quantity: item.quantity,
-          accessories: item.accessories || []
+          accessories: item.accessories || [],
+          price: item.product.price // Include the price for order processing
         })),
         shippingAddress: {
           fullName: formData.fullName.trim(),
@@ -191,14 +199,21 @@ const Checkout: React.FC = () => {
 
       console.log('Placing order with data:', orderData);
       const response = await ordersAPI.createOrder(orderData);
+      console.log('Order created successfully:', response.data);
       
       clearCart();
       showToast('Order placed successfully!', 'success');
       navigate(`/order-confirmation/${response.data._id}`);
     } catch (error: any) {
       console.error('Order creation error:', error);
-      const errorMessage = error.response?.data?.message || 'Error placing order. Please try again.';
+      const errorMessage = error.response?.data?.message || error.message || 'Error placing order. Please try again.';
       showToast(errorMessage, 'error');
+      
+      // If it's a validation error, don't clear the form
+      if (error.response?.status !== 400) {
+        // For server errors, allow user to retry
+        console.log('Server error, allowing retry');
+      }
     } finally {
       setLoading(false);
     }

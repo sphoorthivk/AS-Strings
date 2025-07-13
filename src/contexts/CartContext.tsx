@@ -14,22 +14,33 @@ export const useCart = () => {
 
 interface CartProviderProps {
   children: ReactNode;
-  accessories?: any[];
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const { showToast } = useToast();
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      setItems(JSON.parse(savedCart));
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setItems(parsedCart);
+        console.log('Cart loaded from localStorage:', parsedCart);
+      } catch (error) {
+        console.error('Error parsing cart from localStorage:', error);
+        localStorage.removeItem('cart');
+      }
     }
+    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
+    if (isLoaded) {
+      localStorage.setItem('cart', JSON.stringify(items));
+      console.log('Cart saved to localStorage:', items);
+    }
   }, [items]);
 
 const addItem = (product: Product, size: string, quantity: number, accessories: any[] = []) => {
@@ -59,10 +70,12 @@ const addItem = (product: Product, size: string, quantity: number, accessories: 
   }
   
   setItems(prevItems => {
+    // Create a unique key for cart items including accessories
+    const accessoriesKey = JSON.stringify(accessories?.sort((a, b) => a.id.localeCompare(b.id)) || []);
     const existingItem = prevItems.find(item => 
       item.productId === product._id && 
       item.size === size &&
-      JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
+      JSON.stringify((item.accessories || []).sort((a, b) => a.id.localeCompare(b.id))) === accessoriesKey
     );
     
     if (existingItem) {
@@ -77,19 +90,32 @@ const addItem = (product: Product, size: string, quantity: number, accessories: 
       return prevItems.map(item =>
         item.productId === product._id && 
         item.size === size &&
-        JSON.stringify(item.accessories || []) === JSON.stringify(accessories)
+        JSON.stringify((item.accessories || []).sort((a, b) => a.id.localeCompare(b.id))) === accessoriesKey
           ? { ...item, quantity: newQuantity }
           : item
       );
     }
     
-    return [...prevItems, { productId: product._id, product, size, quantity, accessories }];
+    const newItem = { 
+      productId: product._id, 
+      product, 
+      size, 
+      quantity, 
+      accessories: accessories || [] 
+    };
+    
+    console.log('Adding new item to cart:', newItem);
+    return [...prevItems, newItem];
   });
 };
 
 
   const removeItem = (productId: string, size: string) => {
-    setItems(prevItems => prevItems.filter(item => !(item.productId === productId && item.size === size)));
+    setItems(prevItems => {
+      const filtered = prevItems.filter(item => !(item.productId === productId && item.size === size));
+      console.log('Removing item from cart. New cart:', filtered);
+      return filtered;
+    });
   };
 
   const updateQuantity = (productId: string, size: string, quantity: number) => {
@@ -108,7 +134,9 @@ const addItem = (product: Product, size: string, quantity: number, accessories: 
   };
 
   const clearCart = () => {
+    console.log('Clearing cart');
     setItems([]);
+    localStorage.removeItem('cart');
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);

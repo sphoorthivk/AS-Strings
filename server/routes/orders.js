@@ -9,15 +9,40 @@ const router = express.Router();
 router.post('/', auth, async (req, res) => {
   try {
     const { items, shippingAddress, paymentMethod, shippingCost = 0 } = req.body;
+    
+    console.log('Creating order with data:', { items, shippingAddress, paymentMethod, shippingCost });
+    
+    // Validate required fields
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Order must contain at least one item' });
+    }
+    
+    if (!shippingAddress) {
+      return res.status(400).json({ message: 'Shipping address is required' });
+    }
+    
+    if (!paymentMethod) {
+      return res.status(400).json({ message: 'Payment method is required' });
+    }
 
     // Calculate total amount
     let totalAmount = 0;
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.productId);
+      console.log('Processing item:', item);
+      
+      if (!item.productId || !item.size || !item.quantity) {
+        return res.status(400).json({ message: 'Invalid item data: missing productId, size, or quantity' });
+      }
+      
+      const product = await Product.findById(item.productId).populate('media');
       if (!product) {
         return res.status(404).json({ message: `Product ${item.productId} not found` });
+      }
+      
+      if (!product.isActive) {
+        return res.status(400).json({ message: `Product ${product.name} is no longer available` });
       }
 
       // Check stock
@@ -28,21 +53,35 @@ router.post('/', auth, async (req, res) => {
         });
       }
 
-      const itemTotal = product.price * item.quantity;
+      // Use the price from the item if provided (for consistency), otherwise use product price
+      const itemPrice = item.price || product.price;
+      const itemTotal = itemPrice * item.quantity;
+      
+      // Calculate accessories total
+      let accessoriesTotal = 0;
+      if (item.accessories && Array.isArray(item.accessories)) {
+        accessoriesTotal = item.accessories.reduce((sum, acc) => sum + (acc.price || 0), 0) * item.quantity;
+      }
+      
       totalAmount += itemTotal;
+      totalAmount += accessoriesTotal;
 
       orderItems.push({
         product: product._id,
         size: item.size,
         quantity: item.quantity,
-        price: product.price,
+        price: itemPrice,
         accessories: item.accessories || []
       });
 
       // Update stock
       product.stock.set(item.size, stock - item.quantity);
       await product.save();
+      
+      console.log(`Updated stock for ${product.name} size ${item.size}: ${stock} -> ${stock - item.quantity}`);
     }
+    
+    console.log('Total amount calculated:', totalAmount + shippingCost);
 
     const order = new Order({
       user: req.user._id,
@@ -54,10 +93,16 @@ router.post('/', auth, async (req, res) => {
     });
 
     await order.save();
-    await order.populate('items.product user');
+    await order.populate([
+      { path: 'items.product', populate: { path: 'media' } },
+      { path: 'user', select: 'name email' }
+    ]);
+    
+    console.log('Order created successfully:', order._id);
 
     res.status(201).json(order);
   } catch (error) {
+    console.error('Order creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

@@ -189,7 +189,7 @@ const Header: React.FC = () => {
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium">
                   {totalItems}
                 </span>
               )}
@@ -290,7 +290,7 @@ const Header: React.FC = () => {
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center px-1 font-medium">
                   {totalItems}
                 </span>
               )}

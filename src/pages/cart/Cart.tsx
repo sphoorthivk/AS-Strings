@@ -7,6 +7,11 @@ import { useToast } from '../../contexts/ToastContext';
 const Cart: React.FC = () => {
   const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const { showToast } = useToast();
+  
+  // Debug cart state
+  React.useEffect(() => {
+    console.log('Cart component rendered with items:', items);
+  }, [items]);
 
   const getProductImageUrl = (product: any) => {
     // Check for media array first (new format)
@@ -53,6 +58,29 @@ const Cart: React.FC = () => {
     
     updateQuantity(productId, size, newQuantity);
   };
+  
+  // Show loading state briefly to ensure cart is loaded
+  const [isLoading, setIsLoading] = React.useState(true);
+  
+  React.useEffect(() => {
+    // Give cart context time to load from localStorage
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12 sm:py-16">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
