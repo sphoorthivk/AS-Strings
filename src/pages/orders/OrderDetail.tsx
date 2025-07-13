@@ -8,6 +8,7 @@ const OrderDetail: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (orderId) {
@@ -17,13 +18,49 @@ const OrderDetail: React.FC = () => {
 
   const fetchOrder = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching order details for:', orderId);
       const response = await ordersAPI.getOrder(orderId!);
+      console.log('Order details fetched:', response.data);
       setOrder(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching order:', error);
+      setError(error.response?.data?.message || 'Failed to load order details');
     } finally {
       setLoading(false);
     }
+  };
+
+  const getProductImageUrl = (product: any) => {
+    if (!product) return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+    
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
   };
 
   const getStatusInfo = (status: string) => {
@@ -45,8 +82,39 @@ const OrderDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <LoadingSpinner size="large" />
+            <p className="mt-4 text-gray-600">Loading order details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto text-center">
+          <Package size={64} className="mx-auto text-red-400 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Error Loading Order</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={fetchOrder}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <Link
+              to="/orders"
+              className="block w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Back to Orders
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -215,14 +283,14 @@ const OrderDetail: React.FC = () => {
               Shipping Address
             </h3>
             <div className="space-y-1">
-              <p className="font-medium">{order.shippingAddress.fullName}</p>
-              <p>{order.shippingAddress.street}</p>
+              <p className="font-medium">{order.shippingAddress?.fullName || 'N/A'}</p>
+              <p>{order.shippingAddress?.street || 'N/A'}</p>
               <p>
-                {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                {order.shippingAddress?.city || 'N/A'}, {order.shippingAddress?.state || 'N/A'} {order.shippingAddress?.zipCode || 'N/A'}
               </p>
-              <p>{order.shippingAddress.country}</p>
+              <p>{order.shippingAddress?.country || 'N/A'}</p>
               <p className="text-sm text-gray-600 mt-2">
-                Phone: {order.shippingAddress.phone}
+                Phone: {order.shippingAddress?.phone || 'N/A'}
               </p>
             </div>
           </div>
@@ -246,7 +314,7 @@ const OrderDetail: React.FC = () => {
                   order.paymentStatus === 'completed' ? 'text-green-600' : 
                   order.paymentStatus === 'failed' ? 'text-red-600' : 'text-yellow-600'
                 }`}>
-                  {order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)}
+                  {order.paymentStatus?.charAt(0).toUpperCase() + order.paymentStatus?.slice(1) || 'Pending'}
                 </span>
               </div>
             </div>
@@ -257,69 +325,73 @@ const OrderDetail: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-bold text-gray-800 mb-6">Order Items</h3>
           <div className="space-y-4">
-            {order.items.map((item: any, index: number) => (
-              <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
-                <img
-                  src={item.product.images[0]}
-                  alt={item.product.name}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-800">{item.product.name}</h4>
-                  <p className="text-sm text-gray-600">{item.product.category}</p>
-                  <div className="flex items-center space-x-4 mt-1">
-                    <span className="text-sm text-gray-600">Size: {item.size}</span>
-                    <span className="text-sm text-gray-600">Quantity: {item.quantity}</span>
-                  </div>
-                  {item.accessories && item.accessories.length > 0 && (
-                    <div className="text-sm text-gray-600 mt-2">
-                      <span className="font-medium">Accessories:</span>
-                      <div className="ml-2 mt-2 space-y-2">
-                        {item.accessories.map((accessory, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                            <div className="flex items-center">
-                              <span className="w-3 h-3 bg-purple-500 rounded-full mr-3"></span>
-                              <span className="font-medium text-gray-700">{accessory.name}</span>
+            {order.items && order.items.length > 0 ? (
+              order.items.map((item: any, index: number) => (
+                <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
+                  <img
+                    src={getProductImageUrl(item.product)}
+                    alt={item.product?.name || 'Product'}
+                    className="w-20 h-20 object-cover rounded-lg"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                    }}
+                  />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-800">{item.product?.name || 'Unknown Product'}</h4>
+                    <p className="text-sm text-gray-600">{item.product?.category || 'N/A'}</p>
+                    <div className="flex items-center space-x-4 mt-1">
+                      <span className="text-sm text-gray-600">Size: {item.size}</span>
+                      <span className="text-sm text-gray-600">Quantity: {item.quantity}</span>
+                    </div>
+                    {item.accessories && item.accessories.length > 0 && (
+                      <div className="text-sm text-gray-600 mt-2">
+                        <span className="font-medium">Accessories:</span>
+                        <div className="ml-2 mt-2 space-y-2">
+                          {item.accessories.map((accessory: any, accIndex: number) => (
+                            <div key={accIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                              <div className="flex items-center">
+                                <span className="w-3 h-3 bg-purple-500 rounded-full mr-3"></span>
+                                <span className="font-medium text-gray-700">{accessory.name}</span>
+                              </div>
+                              <span className="font-medium">
+                                {accessory.price === 0 ? (
+                                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Free</span>
+                                ) : (
+                                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">+${accessory.price}</span>
+                                )}
+                              </span>
                             </div>
-                            <span className="font-medium">
-                              {accessory.price === 0 ? (
-                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Free</span>
-                              ) : (
-                                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">+$${accessory.price}</span>
-                              )}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="bg-purple-50 border border-purple-200 p-3 rounded-lg">
-                          <div className="text-sm font-medium text-purple-800">
-                            ✓ Customer Selected Accessories Summary:
-                          </div>
-                          <div className="text-sm text-purple-700 mt-1">
-                            • {item.accessories.length} accessory/accessories chosen
-                            • Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                          ))}
+                          <div className="bg-purple-50 border border-purple-200 p-3 rounded-lg">
+                            <div className="text-sm font-medium text-purple-800">
+                              ✓ Customer Selected Accessories Summary:
+                            </div>
+                            <div className="text-sm text-purple-700 mt-1">
+                              • {item.accessories.length} accessory/accessories chosen
+                              • Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {order.trackingNumber && (
-                    <div className="flex justify-between">
-                      <span>Tracking Number:</span>
-                      <span className="font-medium text-purple-600">{order.trackingNumber}</span>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-lg">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                    <p className="text-sm text-gray-600">${item.price || 0} each</p>
+                    {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
+                      <p className="text-xs text-gray-500">
+                        +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)} accessories
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-lg">${(item.price * item.quantity).toFixed(2)}</p>
-                  <p className="text-sm text-gray-600">${item.price} each</p>
-                  {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
-                    <p className="text-xs text-gray-500">
-                      +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)} accessories
-                    </p>
-                  )}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No items found in this order
               </div>
-            ))}
+            )}
           </div>
 
           {/* Order Total */}
@@ -327,18 +399,18 @@ const OrderDetail: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
-                <span>${(order.totalAmount - (order.shippingCost || 0)).toFixed(2)}</span>
+                <span>${((order.totalAmount || 0) - (order.shippingCost || 0)).toFixed(2)}</span>
               </div>
               {order.shippingCost > 0 && (
                 <div className="flex justify-between">
                   <span>Shipping:</span>
-                  <span>${order.shippingCost.toFixed(2)}</span>
+                  <span>${(order.shippingCost || 0).toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t pt-2">
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total:</span>
-                  <span>${order.totalAmount.toFixed(2)}</span>
+                  <span>${(order.totalAmount || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>

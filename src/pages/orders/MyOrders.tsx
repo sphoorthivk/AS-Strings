@@ -9,6 +9,7 @@ const MyOrders: React.FC = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -18,16 +19,50 @@ const MyOrders: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
+      setError(null);
       console.log('Fetching user orders...');
       const response = await ordersAPI.getMyOrders();
       console.log('Orders fetched:', response.data);
-      setOrders(response.data);
-    } catch (error) {
+      setOrders(response.data || []);
+    } catch (error: any) {
       console.error('Error fetching orders:', error);
-      setOrders([]); // Set empty array on error
+      setError(error.response?.data?.message || 'Failed to load orders');
+      setOrders([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getProductImageUrl = (product: any) => {
+    if (!product) return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+    
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
   };
 
   const getStatusIcon = (status: string) => {
@@ -66,8 +101,31 @@ const MyOrders: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <LoadingSpinner size="large" />
+            <p className="mt-4 text-gray-600">Loading your orders...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-16">
+          <Package size={64} className="mx-auto text-red-400 mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Error Loading Orders</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={fetchOrders}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -121,7 +179,7 @@ const MyOrders: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="font-semibold text-lg">${order.totalAmount.toFixed(2)}</p>
+                    <p className="font-semibold text-lg">${(order.totalAmount || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Payment Method</p>
@@ -131,31 +189,39 @@ const MyOrders: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Items</p>
-                    <p className="font-medium">{order.items.length} item(s)</p>
+                    <p className="font-medium">{order.items?.length || 0} item(s)</p>
                   </div>
                 </div>
 
                 {/* Order Items Preview */}
                 <div className="border-t pt-4">
                   <div className="flex items-center space-x-4 overflow-x-auto">
-                    {order.items.slice(0, 3).map((item: any, index: number) => (
-                      <div key={index} className="flex-shrink-0 flex items-center space-x-3">
-                        <img
-                          src={item.product.images[0]}
-                          alt={item.product.name}
-                          className="w-12 h-12 object-cover rounded-lg"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-gray-800 truncate max-w-32">
-                            {item.product.name}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            Size: {item.size} | Qty: {item.quantity}
-                          </p>
+                    {order.items && order.items.length > 0 ? (
+                      order.items.slice(0, 3).map((item: any, index: number) => (
+                        <div key={index} className="flex-shrink-0 flex items-center space-x-3">
+                          <img
+                            src={getProductImageUrl(item.product)}
+                            alt={item.product?.name || 'Product'}
+                            className="w-12 h-12 object-cover rounded-lg"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                            }}
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800 truncate max-w-32">
+                              {item.product?.name || 'Unknown Product'}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Size: {item.size} | Qty: {item.quantity}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {order.items.length > 3 && (
+                      ))
+                    ) : (
+                      <div className="text-sm text-gray-500">No items found</div>
+                    )}
+                    {order.items && order.items.length > 3 && (
                       <div className="flex-shrink-0 text-sm text-gray-600">
                         +{order.items.length - 3} more
                       </div>
