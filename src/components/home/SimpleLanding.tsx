@@ -40,7 +40,7 @@ const SimpleLanding: React.FC = () => {
         {/* Social Media Icons */}
         <div className="flex justify-center space-x-6">
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/shreadslife?igsh=MWljMnZleHFqd245eQ=="
             target="_blank"
             rel="noopener noreferrer"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
@@ -52,7 +52,7 @@ const SimpleLanding: React.FC = () => {
           </a>
           
           <a
-            href="https://wa.me/1234567890"
+            href="https://wa.me/919876543210"
             target="_blank"
             rel="noopener noreferrer"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
@@ -64,7 +64,7 @@ const SimpleLanding: React.FC = () => {
           </a>
           
           <a
-            href="mailto:contact@fashionhub.com"
+            href="mailto:shreadslife@gmail.com"
             className="group bg-white p-4 rounded-full shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110"
           >
             <Mail 
