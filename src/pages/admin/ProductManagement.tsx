@@ -551,30 +551,30 @@ const ProductManagement: React.FC = () => {
                             </span>
                           )}
                           {/* Add accessories display */}
-      {product.accessories && product.accessories.length > 0 && (
-        <div className="mt-1">
-          <span className="text-xs text-gray-500 font-medium">Available Accessories:</span>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
-              <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full border border-purple-200">
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
-                {accessory.name} 
-                <span className="ml-1 font-medium">
-                  {accessory.price === 0 ? '(Free)' : `($${accessory.price})`}
-                </span>
-              </span>
-            ))}
-            {product.accessories.length > 2 && (
-              <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">
-                +{product.accessories.length - 2} more
-              </span>
-            )}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">
-            Customers can select these accessories when purchasing
-          </div>
-        </div>
-      )}
+                          {product.accessories && product.accessories.length > 0 && (
+                            <div className="mt-1">
+                              <span className="text-xs text-gray-500 font-medium">Available Accessories:</span>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
+                                  <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full border border-purple-200">
+                                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
+                                    {accessory.name} 
+                                    <span className="ml-1 font-medium">
+                                      {accessory.price === 0 ? '(Free)' : `($${accessory.price})`}
+                                    </span>
+                                  </span>
+                                ))}
+                                {product.accessories.length > 2 && (
+                                  <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">
+                                    +{product.accessories.length - 2} more
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Customers can select these accessories when purchasing
+                              </div>
+                            </div>
+                          )}
 
                         </div>
                       </div>
