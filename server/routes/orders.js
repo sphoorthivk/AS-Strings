@@ -25,6 +25,13 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ message: 'Payment method is required' });
     }
 
+    // Validate shipping address fields
+    const requiredAddressFields = ['fullName', 'phone', 'street', 'city', 'state', 'zipCode'];
+    for (const field of requiredAddressFields) {
+      if (!shippingAddress[field] || !shippingAddress[field].toString().trim()) {
+        return res.status(400).json({ message: `${field} is required in shipping address` });
+      }
+    }
     // Calculate total amount
     let totalAmount = 0;
     const orderItems = [];
@@ -90,6 +97,8 @@ router.post('/', auth, async (req, res) => {
       paymentMethod,
       totalAmount: totalAmount + shippingCost,
       shippingCost
+      paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending',
+      orderStatus: 'pending'
     });
 
     await order.save();
@@ -110,12 +119,20 @@ router.post('/', auth, async (req, res) => {
 // Get user orders
 router.get('/my-orders', auth, async (req, res) => {
   try {
+    console.log('Fetching orders for user:', req.user._id);
     const orders = await Order.find({ user: req.user._id })
-      .populate('items.product')
+      .populate({
+        path: 'items.product',
+        populate: {
+          path: 'media'
+        }
+      })
       .sort({ createdAt: -1 });
 
+    console.log('Found orders:', orders.length);
     res.json(orders);
   } catch (error) {
+    console.error('Error fetching user orders:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -172,21 +189,31 @@ router.put('/:id/status', adminAuth, async (req, res) => {
 // Get single order
 router.get('/:id', auth, async (req, res) => {
   try {
+    console.log('Fetching order:', req.params.id, 'for user:', req.user._id);
     const order = await Order.findById(req.params.id)
-      .populate('items.product')
+      .populate({
+        path: 'items.product',
+        populate: {
+          path: 'media'
+        }
+      })
       .populate('user', 'name email');
 
     if (!order) {
+      console.log('Order not found:', req.params.id);
       return res.status(404).json({ message: 'Order not found' });
     }
 
     // Check if user owns the order or is admin
     if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      console.log('Access denied for order:', req.params.id, 'user:', req.user._id);
       return res.status(403).json({ message: 'Access denied' });
     }
 
+    console.log('Order found and authorized:', order._id);
     res.json(order);
   } catch (error) {
+    console.error('Error fetching single order:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

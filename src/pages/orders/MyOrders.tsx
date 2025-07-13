@@ -18,10 +18,13 @@ const MyOrders: React.FC = () => {
 
   const fetchOrders = async () => {
     try {
+      console.log('Fetching user orders...');
       const response = await ordersAPI.getMyOrders();
+      console.log('Orders fetched:', response.data);
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
+      setOrders([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

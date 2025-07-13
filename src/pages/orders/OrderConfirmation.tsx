@@ -17,10 +17,20 @@ const OrderConfirmation: React.FC = () => {
 
   const fetchOrder = async () => {
     try {
+      if (!orderId) {
+        console.error('No order ID provided');
+        return;
+      }
+      
       const response = await ordersAPI.getOrder(orderId!);
+      console.log('Order fetched successfully:', response.data);
       setOrder(response.data);
     } catch (error) {
       console.error('Error fetching order:', error);
+      // Don't show error immediately, let the user see a loading state
+      setTimeout(() => {
+        setOrder(null);
+      }, 2000);
     } finally {
       setLoading(false);
     }

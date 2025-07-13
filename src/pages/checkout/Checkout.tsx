@@ -201,9 +201,15 @@ const Checkout: React.FC = () => {
       const response = await ordersAPI.createOrder(orderData);
       console.log('Order created successfully:', response.data);
       
+      // Clear cart before navigation
       clearCart();
       showToast('Order placed successfully!', 'success');
+      
+      // Add a small delay to ensure the order is fully processed
+      setTimeout(() => {
       navigate(`/order-confirmation/${response.data._id}`);
+      }, 500);
+      
     } catch (error: any) {
       console.error('Order creation error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Error placing order. Please try again.';
