@@ -241,7 +241,7 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
           {/* Accessories Selection */}
-          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
+          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
             <div>
               <h3 className="text-lg font-semibold mb-3">
                 Available Accessories 
@@ -331,7 +331,7 @@ const ProductDetail: React.FC = () => {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
           <div className="space-y-4">

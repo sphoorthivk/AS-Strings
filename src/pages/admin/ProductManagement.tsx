@@ -551,7 +551,7 @@ const ProductManagement: React.FC = () => {
                             </span>
                           )}
                           {/* Add accessories display */}
-                          {product.accessories && product.accessories.length > 0 && (
+                          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                             <div className="mt-1">
                               <span className="text-xs text-gray-500 font-medium">Available Accessories:</span>
                               <div className="flex flex-wrap gap-1 mt-2">
