@@ -10,13 +10,6 @@ const Cart: React.FC = () => {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Debug cart state
-  React.useEffect(() => {
-    console.log('Cart component rendered with items:', items);
-    console.log('Total items:', totalItems);
-    console.log('Total price:', totalPrice);
-  }, [items]);
-
   // Wait for cart to initialize
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -83,8 +76,6 @@ const Cart: React.FC = () => {
     );
   }
 
-  console.log('Rendering cart with items:', items.length);
-
   if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12 sm:py-16">
@@ -143,7 +134,7 @@ const Cart: React.FC = () => {
                                   {accessory.price === 0 ? (
                                     <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Free</span>
                                   ) : (
-                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs">+$${accessory.price}</span>
+                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs">+${accessory.price}</span>
                                   )}
                                 </span>
                               </div>

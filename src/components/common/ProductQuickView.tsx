@@ -26,61 +26,34 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       setSelectedSize(product.sizes[0]);
     }
     setSelectedAccessories([]);
-    console.log('=== QUICK VIEW ACCESSORIES DEBUG ===');
-    console.log('Product received:', product);
-    console.log('Product name:', product?.name);
-    console.log('Raw accessories:', product?.accessories);
-    console.log('Accessories type:', typeof product?.accessories);
-    console.log('Accessories is array:', Array.isArray(product?.accessories));
-    console.log('Accessories length:', product?.accessories ? product?.accessories.length : 'undefined');
-    
-    if (product?.accessories && Array.isArray(product.accessories)) {
-      console.log('Accessories found in QuickView:');
-      product.accessories.forEach((acc, index) => {
-        console.log(`Accessory ${index}:`, acc);
-      });
-    } else {
-      console.log('No accessories found in QuickView');
-    }
-    console.log('=== END QUICK VIEW ACCESSORIES DEBUG ===');
-    
-    console.log('ProductQuickView - Legacy debug:', {
-      productName: product?.name,
-      accessories: product?.accessories,
-      accessoriesType: typeof product?.accessories,
-      accessoriesLength: product?.accessories ? product?.accessories.length : 0,
-      accessoriesIsArray: Array.isArray(product?.accessories),
-      fullProduct: product
-    });
   }, [product]);
 
-const handleAddToCart = () => {
-  if (!selectedSize) {
-    showToast('Please select a size before adding to cart', 'error');
-    return;
-  }
-  
-  if (!product.sizes || product.sizes.length === 0) {
-    showToast('This product has no available sizes', 'error');
-    return;
-  }
-  
-  const stock = product.stock?.[selectedSize] || 0;
-  if (stock < quantity) {
-    showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
-    return;
-  }
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      showToast('Please select a size before adding to cart', 'error');
+      return;
+    }
+    
+    if (!product.sizes || product.sizes.length === 0) {
+      showToast('This product has no available sizes', 'error');
+      return;
+    }
+    
+    const stock = product.stock?.[selectedSize] || 0;
+    if (stock < quantity) {
+      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
+      return;
+    }
 
-  // Get selected accessories
-  const accessories = selectedAccessories.map(accessoryId => 
-    product.accessories?.find((acc: any) => acc.id === accessoryId)
-  ).filter(Boolean);
+    // Get selected accessories
+    const accessories = selectedAccessories.map(accessoryId => 
+      product.accessories?.find((acc: any) => acc.id === accessoryId)
+    ).filter(Boolean);
 
-  addItem(product, selectedSize, quantity, accessories);
-  showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
-  onClose();
-};
-
+    addItem(product, selectedSize, quantity, accessories);
+    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
+    onClose();
+  };
 
   const handleToggleWishlist = () => {
     if (!user) {
@@ -239,7 +212,7 @@ const handleAddToCart = () => {
               </div>
 
               {/* Accessories Selection */}
-              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
+              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">
                     Available Accessories
@@ -247,9 +220,6 @@ const handleAddToCart = () => {
                       ({selectedAccessories.length} selected)
                     </span>
                   </h3>
-                  <div className="mb-2 text-xs text-purple-600 bg-purple-50 p-2 rounded">
-                    Debug: Found {product.accessories.length} accessories - {JSON.stringify(product.accessories)}
-                  </div>
                   <div className="space-y-2">
                     {product.accessories.map((accessory: any) => (
                       <label key={accessory.id} className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -276,7 +246,7 @@ const handleAddToCart = () => {
                               {accessory.price === 0 ? (
                                 <span className="text-green-600 font-medium">Free</span>
                               ) : (
-                                <span className="text-purple-600 font-medium">+$${accessory.price}</span>
+                                <span className="text-purple-600 font-medium">+${accessory.price}</span>
                               )}
                             </div>
                           </div>
@@ -288,7 +258,7 @@ const handleAddToCart = () => {
                             </span>
                           ) : (
                             <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
-                              +$${accessory.price}
+                              +${accessory.price}
                             </span>
                           )}
                           {selectedAccessories.includes(accessory.id) && (
@@ -316,11 +286,8 @@ const handleAddToCart = () => {
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="mb-2 text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                  Debug: No accessories found. Product accessories: {JSON.stringify(product.accessories)}
-                </div>
               )}
+
               {/* Action Buttons */}
               <div className="space-y-3 sm:space-y-4">
                 <button

@@ -35,34 +35,6 @@ const ProductDetail: React.FC = () => {
       setLoading(true);
       const response = await productsAPI.getProduct(id!);
       setProduct(response.data);
-      console.log('=== FRONTEND PRODUCT DETAIL DEBUG ===');
-      console.log('Raw response data:', response.data);
-      console.log('Product name:', response.data.name);
-      console.log('Product accessories raw:', response.data.accessories);
-      console.log('Accessories type:', typeof response.data.accessories);
-      console.log('Accessories is array:', Array.isArray(response.data.accessories));
-      console.log('Accessories length:', response.data.accessories ? response.data.accessories.length : 'undefined');
-      
-      if (response.data.accessories) {
-        console.log('Accessories data structure:');
-        response.data.accessories.forEach((acc, index) => {
-          console.log(`Accessory ${index}:`, acc);
-          console.log(`  - ID: ${acc.id}`);
-          console.log(`  - Name: ${acc.name}`);
-          console.log(`  - Price: ${acc.price}`);
-        });
-      }
-      
-      console.log('Full product keys:', Object.keys(response.data));
-      console.log('=== END FRONTEND PRODUCT DETAIL DEBUG ===');
-      
-      console.log('ProductDetail - Accessories check:', {
-        name: response.data.name,
-        accessories: response.data.accessories,
-        accessoriesType: typeof response.data.accessories,
-        accessoriesLength: response.data.accessories ? response.data.accessories.length : 0,
-        accessoriesIsArray: Array.isArray(response.data.accessories)
-      });
       
       if (response.data.sizes?.length > 0) {
         setSelectedSize(response.data.sizes[0]);
@@ -75,35 +47,33 @@ const ProductDetail: React.FC = () => {
     }
   };
 
- 
   const handleAddToCart = () => {
-  // Check if product has sizes and none is selected
-  if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-    showToast('Please select a size before adding to cart', 'error');
-    return;
-  }
-  
-  // If no sizes available, show error
-  if (!product.sizes || product.sizes.length === 0) {
-    showToast('This product has no available sizes', 'error');
-    return;
-  }
-  
-  const stock = product.stock?.[selectedSize] || 0;
-  if (stock < quantity) {
-    showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
-    return;
-  }
+    // Check if product has sizes and none is selected
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      showToast('Please select a size before adding to cart', 'error');
+      return;
+    }
+    
+    // If no sizes available, show error
+    if (!product.sizes || product.sizes.length === 0) {
+      showToast('This product has no available sizes', 'error');
+      return;
+    }
+    
+    const stock = product.stock?.[selectedSize] || 0;
+    if (stock < quantity) {
+      showToast(`Only ${stock} items available in size ${selectedSize}`, 'error');
+      return;
+    }
 
-  // Get selected accessories
-  const accessories = selectedAccessories.map(accessoryId => 
-    product.accessories?.find((acc: any) => acc.id === accessoryId)
-  ).filter(Boolean);
+    // Get selected accessories
+    const accessories = selectedAccessories.map(accessoryId => 
+      product.accessories?.find((acc: any) => acc.id === accessoryId)
+    ).filter(Boolean);
 
-  addItem(product, selectedSize, quantity, accessories);
-  showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
-};
-
+    addItem(product, selectedSize, quantity, accessories);
+    showToast(`Added ${quantity} ${product.name} (${selectedSize}) to cart!`, 'success');
+  };
 
   const handleToggleWishlist = () => {
     if (!user) {
@@ -202,43 +172,42 @@ const ProductDetail: React.FC = () => {
             <p>{product.description}</p>
           </div>
 
-         {/* Size Selection */}
-{product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
-  <div>
-    <h3 className="text-lg font-semibold mb-3">
-      Size <span className="text-red-600">*</span> 
-      <span className="text-sm text-gray-500 font-normal">(Required)</span>
-    </h3>
-    <div className="grid grid-cols-4 gap-3">
-      {product.sizes.map((size: string) => {
-        const stock = product.stock?.[size] || 0;
-        const isAvailable = stock > 0;
-        
-        return (
-          <button
-            key={size}
-            onClick={() => isAvailable && setSelectedSize(size)}
-            disabled={!isAvailable}
-            className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
-              selectedSize === size
-                ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
-                : isAvailable
-                ? 'border-gray-300 hover:border-gray-400'
-                : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {size}
-            {!isAvailable && <div className="text-xs">Out of Stock</div>}
-          </button>
-        );
-      })}
-    </div>
-    {!selectedSize && (
-      <p className="text-sm text-red-600 mt-2 font-medium">* Please select a size before adding to cart</p>
-    )}
-  </div>
-)}
-
+          {/* Size Selection */}
+          {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">
+                Size <span className="text-red-600">*</span> 
+                <span className="text-sm text-gray-500 font-normal">(Required)</span>
+              </h3>
+              <div className="grid grid-cols-4 gap-3">
+                {product.sizes.map((size: string) => {
+                  const stock = product.stock?.[size] || 0;
+                  const isAvailable = stock > 0;
+                  
+                  return (
+                    <button
+                      key={size}
+                      onClick={() => isAvailable && setSelectedSize(size)}
+                      disabled={!isAvailable}
+                      className={`py-3 px-4 border rounded-lg font-medium transition-colors ${
+                        selectedSize === size
+                          ? 'border-purple-600 bg-purple-50 text-purple-600 ring-2 ring-purple-200'
+                          : isAvailable
+                          ? 'border-gray-300 hover:border-gray-400'
+                          : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {size}
+                      {!isAvailable && <div className="text-xs">Out of Stock</div>}
+                    </button>
+                  );
+                })}
+              </div>
+              {!selectedSize && (
+                <p className="text-sm text-red-600 mt-2 font-medium">* Please select a size before adding to cart</p>
+              )}
+            </div>
+          )}
 
           {/* Quantity */}
           <div>
@@ -269,6 +238,7 @@ const ProductDetail: React.FC = () => {
               )}
             </div>
           </div>
+
           {/* Accessories Selection */}
           {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
             <div>
@@ -278,9 +248,6 @@ const ProductDetail: React.FC = () => {
                   ({selectedAccessories.length} selected)
                 </span>
               </h3>
-              <div className="mb-2 text-xs text-purple-600 bg-purple-50 p-2 rounded">
-                Debug: Found {product.accessories.length} accessories - {JSON.stringify(product.accessories)}
-              </div>
               <div className="space-y-3">
                 {product.accessories.map((accessory: any) => (
                   <label key={accessory.id} className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -431,12 +398,8 @@ const ProductDetail: React.FC = () => {
           )}
         </div>
 
-
-        {/* Review Form  worsk
-        */}
+        {/* Review Form */}
         {showReviewForm && (
-
-
           <form onSubmit={handleSubmitReview} className="bg-gray-50 p-6 rounded-lg mb-8">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>

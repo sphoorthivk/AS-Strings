@@ -171,7 +171,7 @@ const Wishlist: React.FC = () => {
           </div>
         </div>
         
-        {/* Add accessories display in list view */}
+        {/* Add accessories display */}
         {product.accessories && product.accessories.length > 0 && (
           <div className="mt-2">
             <div className="text-sm text-gray-500 font-medium mb-1">Available Accessories:</div>
@@ -246,27 +246,6 @@ const Wishlist: React.FC = () => {
         />
       </div>
       
-      {/* Add accessories display */}
-      {product.accessories && product.accessories.length > 0 && (
-        <div className="mb-3">
-          <div className="text-xs text-gray-500 font-medium mb-1">Available Accessories:</div>
-          <div className="flex flex-wrap gap-1">
-            {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
-              <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
-                {accessory.name}
-                {accessory.price === 0 ? ' (Free)' : ` (+$${accessory.price})`}
-              </span>
-            ))}
-            {product.accessories.length > 2 && (
-              <span className="text-xs text-purple-600 font-medium">
-                +{product.accessories.length - 2} more
-              </span>
-            )}
-          </div>
-        </div>
-      )}
-      
       <div className="flex-1">
         <div className="flex items-center justify-between">
           <div>
@@ -292,6 +271,27 @@ const Wishlist: React.FC = () => {
               </div>
               <span className="text-sm text-gray-600 ml-2">({product.reviews?.length || 0})</span>
             </div>
+            
+            {/* Add accessories display in list view */}
+            {product.accessories && product.accessories.length > 0 && (
+              <div className="mb-3">
+                <div className="text-xs text-gray-500 font-medium mb-1">Available Accessories:</div>
+                <div className="flex flex-wrap gap-1">
+                  {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
+                    <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                      <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
+                      {accessory.name}
+                      {accessory.price === 0 ? ' (Free)' : ` (+$${accessory.price})`}
+                    </span>
+                  ))}
+                  {product.accessories.length > 2 && (
+                    <span className="text-xs text-purple-600 font-medium">
+                      +{product.accessories.length - 2} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="text-right">
