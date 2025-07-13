@@ -60,13 +60,13 @@ router.get('/', async (req, res) => {
       sortOptions.createdAt = -1; // newest first
     }
 
-    const products = await Product.find(filter)
-      .sort(sortOptions)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .populate('reviews.user', 'name')
-      .populate('media');
-      .lean(); // Use lean() for better performance and to ensure we get plain objects
+   const products = await Product.find(filter)
+  .sort(sortOptions)
+  .limit(limit * 1)
+  .skip((page - 1) * limit)
+  .populate('reviews.user', 'name')
+  .populate('media')
+  .lean(); // ✅ now correctly chained
 
     const total = await Product.countDocuments(filter);
 
