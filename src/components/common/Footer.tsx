@@ -11,9 +11,9 @@ const Footer: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">F</span>
+                <span className="text-white font-bold text-xs">AS</span>
               </div>
-              <span className="text-xl font-bold">FashionHub</span>
+              <span className="text-xl font-bold">AS Shreads</span>
             </div>
             <p className="text-gray-300 mb-4">
               Your premier destination for the latest fashion trends. Quality clothing for every style and occasion.
@@ -169,7 +169,7 @@ const Footer: React.FC = () => {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © 2024 FashionHub. All rights reserved. | 
+            © 2024 AS Shreads. All rights reserved. | 
             <span className="inline-flex items-center ml-2">
               <svg className="w-4 h-4 mr-1 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />

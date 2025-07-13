@@ -117,9 +117,9 @@ const Header: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 z-10" onClick={handleLinkClick}>
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm lg:text-base">F</span>
+              <span className="text-white font-bold text-xs lg:text-sm">AS</span>
             </div>
-            <span className="text-lg lg:text-xl font-bold text-gray-800 hidden sm:block">FashionHub</span>
+            <span className="text-lg lg:text-xl font-bold text-gray-800 hidden sm:block">AS Shreads</span>
           </Link>
 
           {/* Desktop Navigation */}
