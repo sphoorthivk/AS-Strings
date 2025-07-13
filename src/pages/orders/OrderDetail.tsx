@@ -274,19 +274,31 @@ const OrderDetail: React.FC = () => {
                   {item.accessories && item.accessories.length > 0 && (
                     <div className="text-sm text-gray-600 mt-2">
                       <span className="font-medium">Accessories:</span>
-                      <div className="ml-2">
+                      <div className="ml-2 mt-2 space-y-2">
                         {item.accessories.map((accessory, index) => (
-                          <div key={index} className="text-xs flex items-center justify-between">
-                            <span>• {accessory.name}</span>
-                            <span className="ml-2">
+                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                            <div className="flex items-center">
+                              <span className="w-3 h-3 bg-purple-500 rounded-full mr-3"></span>
+                              <span className="font-medium text-gray-700">{accessory.name}</span>
+                            </div>
+                            <span className="font-medium">
                               {accessory.price === 0 ? (
-                                <span className="text-green-600 font-medium">Free</span>
+                                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">Free</span>
                               ) : (
-                                `+$${accessory.price}`
+                                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">+$${accessory.price}</span>
                               )}
                             </span>
                           </div>
                         ))}
+                        <div className="bg-purple-50 border border-purple-200 p-3 rounded-lg">
+                          <div className="text-sm font-medium text-purple-800">
+                            ✓ Customer Selected Accessories Summary:
+                          </div>
+                          <div className="text-sm text-purple-700 mt-1">
+                            • {item.accessories.length} accessory/accessories chosen
+                            • Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

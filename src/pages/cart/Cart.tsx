@@ -101,19 +101,25 @@ const Cart: React.FC = () => {
                       {item.accessories && item.accessories.length > 0 && (
                         <div className="text-sm text-gray-600 mt-1">
                           <span className="font-medium">Accessories:</span>
-                          <div className="ml-2">
+                          <div className="ml-2 mt-1 space-y-1">
                             {item.accessories.map((accessory, index) => (
-                              <div key={index} className="flex items-center justify-between">
-                                <span>• {accessory.name}</span>
-                                <span className="ml-2">
+                              <div key={index} className="flex items-center justify-between p-2 bg-purple-50 rounded border border-purple-200">
+                                <div className="flex items-center">
+                                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                                  <span className="font-medium text-purple-700">{accessory.name}</span>
+                                </div>
+                                <span className="text-purple-600 font-medium">
                                   {accessory.price === 0 ? (
-                                    <span className="text-green-600 font-medium">Free</span>
+                                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Free</span>
                                   ) : (
-                                    `+$${accessory.price}`
+                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs">+$${accessory.price}</span>
                                   )}
                                 </span>
                               </div>
                             ))}
+                            <div className="text-xs text-purple-600 font-medium mt-1 pl-4">
+                              Accessories Total: +${(item.accessories || []).reduce((sum: number, acc: any) => sum + acc.price, 0).toFixed(2)} per item
+                            </div>
                           </div>
                         </div>
                       )}
