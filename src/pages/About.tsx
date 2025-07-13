@@ -61,7 +61,7 @@ const About: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">About FashionHub</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">About AS Shreads</h1>
             <p className="text-xl md:text-2xl text-purple-100 mb-8">
               Your trusted partner in fashion, bringing style and authenticity to your doorstep
             </p>
@@ -82,7 +82,7 @@ const About: React.FC = () => {
                 <h2 className="text-3xl font-bold text-gray-800 mb-6">Our Story</h2>
                 <div className="space-y-4 text-gray-600">
                   <p>
-                    Founded in 2024, FashionHub started as a small startup with a big dream - to make 
+                    Founded in 2024, AS Shreads started as a small startup with a big dream - to make 
                     quality fashion accessible to everyone across India. What began as a passion project 
                     has grown into a trusted platform serving thousands of customers nationwide.
                   </p>
