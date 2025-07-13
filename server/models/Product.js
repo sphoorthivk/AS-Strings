@@ -87,7 +87,7 @@ const productSchema = new mongoose.Schema({
     }
   }],
   // Set default empty array for accessories
-  default: []
+  default: [],
   rating: {
     type: Number,
     default: 0,
