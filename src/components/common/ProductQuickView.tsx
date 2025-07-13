@@ -26,6 +26,7 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       setSelectedSize(product.sizes[0]);
     }
     setSelectedAccessories([]);
+    console.log('ProductQuickView - Product accessories:', product?.accessories);
   }, [product]);
 
 const handleAddToCart = () => {
@@ -213,7 +214,7 @@ const handleAddToCart = () => {
               </div>
 
               {/* Accessories Selection */}
-              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
+              {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                 <div>
                   <h3 className="text-base sm:text-lg font-semibold mb-3">
                     Available Accessories
@@ -221,6 +222,9 @@ const handleAddToCart = () => {
                       ({selectedAccessories.length} selected)
                     </span>
                   </h3>
+                  <div className="mb-2 text-xs text-gray-600">
+                    Debug: Found {product.accessories.length} accessories
+                  </div>
                   <div className="space-y-2">
                     {product.accessories.map((accessory: any) => (
                       <label key={accessory.id} className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
@@ -287,7 +291,7 @@ const handleAddToCart = () => {
                     </div>
                   )}
                 </div>
-              ) : null}
+              )}
               {/* Action Buttons */}
               <div className="space-y-3 sm:space-y-4">
                 <button

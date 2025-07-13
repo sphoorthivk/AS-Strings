@@ -184,6 +184,8 @@ const ProductManagement: React.FC = () => {
         isActive: formData.isActive,
       };
 
+      console.log('Sending product data with accessories:', productData.accessories);
+
       if (editingProduct) {
         await productsAPI.updateProduct(editingProduct._id, productData);
         showToast('Product updated successfully', 'success');

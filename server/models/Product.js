@@ -68,6 +68,21 @@ const productSchema = new mongoose.Schema({
     of: Number,
     default: {}
   },
+  accessories: [{
+    id: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0
+    }
+  }],
   rating: {
     type: Number,
     default: 0,

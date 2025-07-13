@@ -35,6 +35,7 @@ const ProductDetail: React.FC = () => {
       setLoading(true);
       const response = await productsAPI.getProduct(id!);
       setProduct(response.data);
+      console.log('ProductDetail - Fetched product with accessories:', response.data.accessories);
       if (response.data.sizes?.length > 0) {
         setSelectedSize(response.data.sizes[0]);
       }
