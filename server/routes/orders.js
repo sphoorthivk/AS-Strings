@@ -96,7 +96,7 @@ router.post('/', auth, async (req, res) => {
       shippingAddress,
       paymentMethod,
       totalAmount: totalAmount + shippingCost,
-      shippingCost
+      shippingCost,
       paymentStatus: paymentMethod === 'cod' ? 'pending' : 'pending',
       orderStatus: 'pending'
     });
