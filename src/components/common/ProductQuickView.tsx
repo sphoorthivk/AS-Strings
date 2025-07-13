@@ -26,7 +26,25 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({ product, isOpen, on
       setSelectedSize(product.sizes[0]);
     }
     setSelectedAccessories([]);
-    console.log('ProductQuickView - Product accessories debug:', {
+    console.log('=== QUICK VIEW ACCESSORIES DEBUG ===');
+    console.log('Product received:', product);
+    console.log('Product name:', product?.name);
+    console.log('Raw accessories:', product?.accessories);
+    console.log('Accessories type:', typeof product?.accessories);
+    console.log('Accessories is array:', Array.isArray(product?.accessories));
+    console.log('Accessories length:', product?.accessories ? product?.accessories.length : 'undefined');
+    
+    if (product?.accessories && Array.isArray(product.accessories)) {
+      console.log('Accessories found in QuickView:');
+      product.accessories.forEach((acc, index) => {
+        console.log(`Accessory ${index}:`, acc);
+      });
+    } else {
+      console.log('No accessories found in QuickView');
+    }
+    console.log('=== END QUICK VIEW ACCESSORIES DEBUG ===');
+    
+    console.log('ProductQuickView - Legacy debug:', {
       productName: product?.name,
       accessories: product?.accessories,
       accessoriesType: typeof product?.accessories,

@@ -35,13 +35,35 @@ const ProductDetail: React.FC = () => {
       setLoading(true);
       const response = await productsAPI.getProduct(id!);
       setProduct(response.data);
-      console.log('ProductDetail - Full product data:', {
+      console.log('=== FRONTEND PRODUCT DETAIL DEBUG ===');
+      console.log('Raw response data:', response.data);
+      console.log('Product name:', response.data.name);
+      console.log('Product accessories raw:', response.data.accessories);
+      console.log('Accessories type:', typeof response.data.accessories);
+      console.log('Accessories is array:', Array.isArray(response.data.accessories));
+      console.log('Accessories length:', response.data.accessories ? response.data.accessories.length : 'undefined');
+      
+      if (response.data.accessories) {
+        console.log('Accessories data structure:');
+        response.data.accessories.forEach((acc, index) => {
+          console.log(`Accessory ${index}:`, acc);
+          console.log(`  - ID: ${acc.id}`);
+          console.log(`  - Name: ${acc.name}`);
+          console.log(`  - Price: ${acc.price}`);
+        });
+      }
+      
+      console.log('Full product keys:', Object.keys(response.data));
+      console.log('=== END FRONTEND PRODUCT DETAIL DEBUG ===');
+      
+      console.log('ProductDetail - Accessories check:', {
         name: response.data.name,
         accessories: response.data.accessories,
         accessoriesType: typeof response.data.accessories,
         accessoriesLength: response.data.accessories ? response.data.accessories.length : 0,
         accessoriesIsArray: Array.isArray(response.data.accessories)
       });
+      
       if (response.data.sizes?.length > 0) {
         setSelectedSize(response.data.sizes[0]);
       }

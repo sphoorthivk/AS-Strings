@@ -69,6 +69,17 @@ router.get('/', async (req, res) => {
 
     const total = await Product.countDocuments(filter);
 
+    console.log('=== PRODUCTS LIST FETCH DEBUG ===');
+    console.log('Found products:', products.length);
+    products.forEach((product, index) => {
+      if (index < 3) { // Only log first 3 products to avoid spam
+        console.log(`Product ${index}: ${product.name}`);
+        console.log(`  Accessories:`, product.accessories);
+        console.log(`  Accessories type:`, typeof product.accessories);
+        console.log(`  Accessories length:`, product.accessories ? product.accessories.length : 'undefined');
+      }
+    });
+    console.log('=== END PRODUCTS LIST FETCH DEBUG ===');
     res.json({
       products,
       totalPages: Math.ceil(total / limit),
@@ -76,6 +87,7 @@ router.get('/', async (req, res) => {
       total
     });
   } catch (error) {
+    console.error('Error in products list route:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
@@ -91,14 +103,35 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    console.log('Fetched product accessories for frontend:', {
+    console.log('=== PRODUCT FETCH DEBUG ===');
+    console.log('Product ID:', product._id);
+    console.log('Product name:', product.name);
+    console.log('Raw product accessories:', product.accessories);
+    console.log('Accessories type:', typeof product.accessories);
+    console.log('Accessories is array:', Array.isArray(product.accessories));
+    console.log('Accessories length:', product.accessories ? product.accessories.length : 'undefined');
+    console.log('Full product object keys:', Object.keys(product.toObject()));
+    
+    // Ensure accessories are properly formatted
+    const productObj = product.toObject();
+    if (productObj.accessories && Array.isArray(productObj.accessories)) {
+      console.log('Accessories found and properly formatted:', productObj.accessories);
+    } else {
+      console.log('Accessories not found or not an array');
+    }
+    
+    console.log('Sending product to frontend:', {
       productId: product._id,
       productName: product.name,
       accessories: product.accessories,
-      accessoriesCount: product.accessories ? product.accessories.length : 0
+      accessoriesCount: product.accessories ? product.accessories.length : 0,
+      fullAccessoriesData: JSON.stringify(product.accessories)
     });
+    console.log('=== END PRODUCT FETCH DEBUG ===');
+    
     res.json(product);
   } catch (error) {
+    console.error('Error fetching product:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

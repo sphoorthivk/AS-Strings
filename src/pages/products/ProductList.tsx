@@ -117,7 +117,16 @@ const ProductList: React.FC = () => {
 
       const response = await productsAPI.getProducts(params);
       setProducts(response.data.products);
-      console.log('ProductList - Fetched products:', response.data.products.map(p => ({ name: p.name, accessories: p.accessories })));
+      console.log('=== PRODUCT LIST ACCESSORIES DEBUG ===');
+      response.data.products.forEach((product, index) => {
+        console.log(`Product ${index}: ${product.name}`);
+        console.log(`  Accessories:`, product.accessories);
+        console.log(`  Accessories type:`, typeof product.accessories);
+        console.log(`  Accessories is array:`, Array.isArray(product.accessories));
+        console.log(`  Accessories length:`, product.accessories ? product.accessories.length : 'undefined');
+      });
+      console.log('=== END PRODUCT LIST ACCESSORIES DEBUG ===');
+      
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Error fetching products:', error);
