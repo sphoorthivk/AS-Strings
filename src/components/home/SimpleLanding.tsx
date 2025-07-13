@@ -9,10 +9,10 @@ const SimpleLanding: React.FC = () => {
         {/* Logo */}
         <div className="mb-8">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-bold text-2xl">F</span>
+            <span className="text-white font-bold text-2xl">AS</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
-            FashionHub
+            AS Shreads
           </h1>
         </div>
 
