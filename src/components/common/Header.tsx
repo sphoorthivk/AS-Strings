@@ -15,6 +15,11 @@ const Header: React.FC = () => {
   const { totalItems: wishlistItems } = useWishlist();
   const navigate = useNavigate();
 
+  // Debug cart state in header
+  useEffect(() => {
+    console.log('Header - Cart total items:', totalItems);
+  }, [totalItems]);
+
   // Refs for click outside detection
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);

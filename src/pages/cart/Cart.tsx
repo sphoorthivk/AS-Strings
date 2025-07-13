@@ -7,11 +7,23 @@ import { useToast } from '../../contexts/ToastContext';
 const Cart: React.FC = () => {
   const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const { showToast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   
   // Debug cart state
   React.useEffect(() => {
     console.log('Cart component rendered with items:', items);
+    console.log('Total items:', totalItems);
+    console.log('Total price:', totalPrice);
   }, [items]);
+
+  // Wait for cart to initialize
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500); // Give more time for cart to load
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const getProductImageUrl = (product: any) => {
     // Check for media array first (new format)
@@ -59,28 +71,18 @@ const Cart: React.FC = () => {
     updateQuantity(productId, size, newQuantity);
   };
   
-  // Show loading state briefly to ensure cart is loaded
-  const [isLoading, setIsLoading] = React.useState(true);
-  
-  React.useEffect(() => {
-    // Give cart context time to load from localStorage
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12 sm:py-16">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading cart...</p>
+          <p className="mt-4 text-gray-600">Loading your cart...</p>
         </div>
       </div>
     );
   }
+
+  console.log('Rendering cart with items:', items.length);
 
   if (items.length === 0) {
     return (
