@@ -8,6 +8,7 @@ const OrderConfirmation: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (orderId) {
@@ -15,22 +16,51 @@ const OrderConfirmation: React.FC = () => {
     }
   }, [orderId]);
 
+  const getProductImageUrl = (product: any) => {
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+  };
+
   const fetchOrder = async () => {
     try {
       if (!orderId) {
         console.error('No order ID provided');
+        setError('No order ID provided');
         return;
       }
       
-      const response = await ordersAPI.getOrder(orderId!);
+      console.log('Fetching order:', orderId);
+      const response = await ordersAPI.getOrder(orderId);
       console.log('Order fetched successfully:', response.data);
       setOrder(response.data);
-    } catch (error) {
+      setError(null);
+    } catch (error: any) {
       console.error('Error fetching order:', error);
-      // Don't show error immediately, let the user see a loading state
-      setTimeout(() => {
-        setOrder(null);
-      }, 2000);
+      setError(error.response?.data?.message || 'Failed to load order details');
     } finally {
       setLoading(false);
     }
@@ -39,7 +69,38 @@ const OrderConfirmation: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="large" />
+        <div className="text-center">
+          <LoadingSpinner size="large" />
+          <p className="mt-4 text-gray-600">Loading order details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="text-red-500 mb-4">
+            <Package size={64} className="mx-auto mb-4" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Error Loading Order</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={fetchOrder}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <Link
+              to="/orders"
+              className="block w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              View All Orders
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -48,6 +109,13 @@ const OrderConfirmation: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-gray-800">Order not found</h1>
+        <p className="text-gray-600 mt-2">The order you're looking for doesn't exist or has been removed.</p>
+        <Link 
+          to="/orders" 
+          className="inline-block mt-4 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          View All Orders
+        </Link>
       </div>
     );
   }
@@ -100,14 +168,14 @@ const OrderConfirmation: React.FC = () => {
               Shipping Address
             </h3>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="font-medium">{order.shippingAddress.fullName}</p>
-              <p>{order.shippingAddress.street}</p>
+              <p className="font-medium">{order.shippingAddress?.fullName}</p>
+              <p>{order.shippingAddress?.street}</p>
               <p>
-                {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                {order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.zipCode}
               </p>
-              <p>{order.shippingAddress.country}</p>
+              <p>{order.shippingAddress?.country}</p>
               <p className="mt-2 text-sm text-gray-600">
-                Phone: {order.shippingAddress.phone}
+                Phone: {order.shippingAddress?.phone}
               </p>
             </div>
           </div>
@@ -116,24 +184,51 @@ const OrderConfirmation: React.FC = () => {
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">Order Items</h3>
             <div className="space-y-4">
-              {order.items.map((item: any, index: number) => (
-                <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
-                  <img
-                    src={item.product.images[0]}
-                    alt={item.product.name}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-medium">{item.product.name}</h4>
-                    <p className="text-sm text-gray-600">Size: {item.size}</p>
-                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+              {order.items && order.items.length > 0 ? (
+                order.items.map((item: any, index: number) => (
+                  <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg">
+                    <img
+                      src={getProductImageUrl(item.product)}
+                      alt={item.product?.name || 'Product'}
+                      className="w-16 h-16 object-cover rounded-lg"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                      }}
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{item.product?.name || 'Unknown Product'}</h4>
+                      <p className="text-sm text-gray-600">Size: {item.size}</p>
+                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                      {item.accessories && item.accessories.length > 0 && (
+                        <div className="text-sm text-gray-600 mt-1">
+                          <span className="font-medium">Accessories:</span>
+                          <div className="ml-2 mt-1">
+                            {item.accessories.map((accessory: any, accIndex: number) => (
+                              <div key={accIndex} className="text-xs">
+                                • {accessory.name} {accessory.price === 0 ? '(Free)' : `(+$${accessory.price})`}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">${((item.price || 0) * (item.quantity || 1)).toFixed(2)}</p>
+                      <p className="text-sm text-gray-600">${item.price || 0} each</p>
+                      {item.accessories && item.accessories.some((acc: any) => acc.price > 0) && (
+                        <p className="text-xs text-gray-500">
+                          +${((item.accessories || []).reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)} accessories
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                    <p className="text-sm text-gray-600">${item.price} each</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No items found in this order
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -142,9 +237,14 @@ const OrderConfirmation: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold">Total Amount:</span>
               <span className="text-lg font-bold text-purple-600">
-                ${order.totalAmount.toFixed(2)}
+                ${order.totalAmount?.toFixed(2) || '0.00'}
               </span>
             </div>
+            {order.shippingCost > 0 && (
+              <div className="flex justify-between items-center text-sm text-gray-600 mt-1">
+                <span>Includes shipping: ${order.shippingCost.toFixed(2)}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -159,6 +259,9 @@ const OrderConfirmation: React.FC = () => {
             <li>• Your order will be processed within 1-2 business days</li>
             <li>• You'll receive tracking information once your order ships</li>
             <li>• Estimated delivery: 3-7 business days</li>
+            {order.paymentMethod === 'cod' && (
+              <li>• Please keep the exact amount ready for cash on delivery</li>
+            )}
           </ul>
         </div>
 
