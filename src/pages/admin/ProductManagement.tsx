@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, Filter, Eye, Package, DollarSign, Image, Video, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Filter, Eye, Package, DollarSign, Image, Video, X, Copy, Archive, Star, TrendingUp } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import MediaUpload from '../../components/admin/MediaUpload';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -34,6 +34,7 @@ interface ProductFormData {
   accessories: Accessory[];
   featured: boolean;
   isActive: boolean;
+  sku: string;
 }
 
 const ProductManagement: React.FC = () => {
@@ -42,10 +43,14 @@ const ProductManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState<ProductFormData>({
@@ -70,6 +75,7 @@ const ProductManagement: React.FC = () => {
     accessories: [],
     featured: false,
     isActive: true,
+    sku: '',
   });
 
   const [newAccessory, setNewAccessory] = useState({ name: '', price: '' });
@@ -81,7 +87,7 @@ const ProductManagement: React.FC = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [currentPage, searchTerm, selectedCategory]);
+  }, [currentPage, searchTerm, selectedCategory, statusFilter]);
 
   const fetchCategories = async () => {
     try {
@@ -97,9 +103,10 @@ const ProductManagement: React.FC = () => {
       setLoading(true);
       const params = {
         page: currentPage,
-        limit: 10,
+        limit: 12,
         search: searchTerm,
         category: selectedCategory || undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       };
       const response = await productsAPI.getProducts(params);
       setProducts(response.data.products);
@@ -110,6 +117,12 @@ const ProductManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateSKU = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+    return `SKU-${timestamp}-${random}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,9 +195,8 @@ const ProductManagement: React.FC = () => {
         accessories: formData.accessories,
         featured: formData.featured,
         isActive: formData.isActive,
+        sku: formData.sku || generateSKU(),
       };
-
-      console.log('Sending product data with accessories:', productData.accessories);
 
       if (editingProduct) {
         await productsAPI.updateProduct(editingProduct._id, productData);
@@ -229,6 +241,7 @@ const ProductManagement: React.FC = () => {
       accessories: product.accessories || [],
       featured: product.featured || false,
       isActive: product.isActive !== false,
+      sku: product.sku || '',
     });
     setShowAddModal(true);
   };
@@ -241,6 +254,89 @@ const ProductManagement: React.FC = () => {
         fetchProducts();
       } catch (error) {
         showToast('Failed to delete product', 'error');
+      }
+    }
+  };
+
+  const handleDuplicate = async (product: any) => {
+    const duplicatedProduct = {
+      ...product,
+      name: `${product.name} (Copy)`,
+      sku: generateSKU(),
+      _id: undefined,
+    };
+    
+    setEditingProduct(null);
+    setFormData({
+      name: duplicatedProduct.name,
+      description: duplicatedProduct.description,
+      price: duplicatedProduct.price.toString(),
+      originalPrice: duplicatedProduct.originalPrice?.toString() || '',
+      category: duplicatedProduct.category,
+      gender: duplicatedProduct.gender,
+      sizes: duplicatedProduct.sizes || [],
+      colors: duplicatedProduct.colors || [],
+      stock: duplicatedProduct.stock || {},
+      media: duplicatedProduct.media || [],
+      tags: duplicatedProduct.tags || [],
+      weight: duplicatedProduct.weight?.toString() || '',
+      dimensions: {
+        length: duplicatedProduct.dimensions?.length?.toString() || '',
+        width: duplicatedProduct.dimensions?.width?.toString() || '',
+        height: duplicatedProduct.dimensions?.height?.toString() || '',
+      },
+      shippingCost: duplicatedProduct.shippingCost?.toString() || '',
+      accessories: duplicatedProduct.accessories || [],
+      featured: false,
+      isActive: true,
+      sku: duplicatedProduct.sku,
+    });
+    setShowAddModal(true);
+  };
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedProducts.length === 0) {
+      showToast('Please select products first', 'warning');
+      return;
+    }
+
+    const confirmMessage = {
+      delete: 'Are you sure you want to delete the selected products?',
+      activate: 'Are you sure you want to activate the selected products?',
+      deactivate: 'Are you sure you want to deactivate the selected products?',
+      feature: 'Are you sure you want to feature the selected products?',
+      unfeature: 'Are you sure you want to unfeature the selected products?',
+    }[action];
+
+    if (window.confirm(confirmMessage)) {
+      try {
+        // Note: You'll need to implement bulk operations in your API
+        for (const productId of selectedProducts) {
+          switch (action) {
+            case 'delete':
+              await productsAPI.deleteProduct(productId);
+              break;
+            case 'activate':
+              await productsAPI.updateProduct(productId, { isActive: true });
+              break;
+            case 'deactivate':
+              await productsAPI.updateProduct(productId, { isActive: false });
+              break;
+            case 'feature':
+              await productsAPI.updateProduct(productId, { featured: true });
+              break;
+            case 'unfeature':
+              await productsAPI.updateProduct(productId, { featured: false });
+              break;
+          }
+        }
+        
+        setSelectedProducts([]);
+        setShowBulkActions(false);
+        fetchProducts();
+        showToast(`Bulk ${action} completed successfully`, 'success');
+      } catch (error) {
+        showToast(`Failed to perform bulk ${action}`, 'error');
       }
     }
   };
@@ -268,6 +364,7 @@ const ProductManagement: React.FC = () => {
       accessories: [],
       featured: false,
       isActive: true,
+      sku: '',
     });
     setEditingProduct(null);
     setShowAddModal(false);
@@ -300,12 +397,12 @@ const ProductManagement: React.FC = () => {
 
   const addAccessory = () => {
     if (!newAccessory.name.trim()) {
-      showToast('Please enter a proper accessory name', 'error');
+      showToast('Please enter an accessory name', 'error');
       return;
     }
     
     if (!newAccessory.price || newAccessory.price.trim() === '') {
-      showToast('Please enter a proper price for the accessory', 'error');
+      showToast('Please enter a price for the accessory', 'error');
       return;
     }
     
@@ -321,7 +418,6 @@ const ProductManagement: React.FC = () => {
       price: price,
     };
 
-    console.log('Adding accessory:', accessory);
     setFormData({
       ...formData,
       accessories: [...formData.accessories, accessory]
@@ -381,9 +477,108 @@ const ProductManagement: React.FC = () => {
     return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleSelectProduct = (productId: string) => {
+    setSelectedProducts(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProducts.length === products.length) {
+      setSelectedProducts([]);
+    } else {
+      setSelectedProducts(products.map(p => p._id));
+    }
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || product.category === selectedCategory;
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && product.isActive) ||
+                         (statusFilter === 'inactive' && !product.isActive) ||
+                         (statusFilter === 'featured' && product.featured);
+    
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const ProductCard = ({ product }: { product: any }) => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="relative">
+        <input
+          type="checkbox"
+          checked={selectedProducts.includes(product._id)}
+          onChange={() => handleSelectProduct(product._id)}
+          className="absolute top-3 left-3 z-10 w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500"
+        />
+        <img
+          src={getProductImageUrl(product)}
+          alt={product.name}
+          className="w-full h-48 object-cover"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+          }}
+        />
+        <div className="absolute top-3 right-3 flex space-x-1">
+          {product.featured && (
+            <span className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              <Star size={12} className="inline" />
+            </span>
+          )}
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            product.isActive ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}>
+            {product.isActive ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+      </div>
+      
+      <div className="p-4">
+        <h3 className="font-semibold text-gray-900 mb-1 truncate">{product.name}</h3>
+        <p className="text-sm text-gray-600 mb-2">{product.category}</p>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-lg font-bold text-gray-900">${product.price}</span>
+          <span className="text-sm text-gray-500">
+            Stock: {Object.values(product.stock || {}).reduce((sum: number, stock: any) => sum + (stock || 0), 0)}
+          </span>
+        </div>
+        
+        {product.accessories && product.accessories.length > 0 && (
+          <div className="mb-3">
+            <span className="text-xs text-purple-600 font-medium">
+              {product.accessories.length} accessories available
+            </span>
+          </div>
+        )}
+        
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handleEdit(product)}
+            className="flex-1 bg-purple-600 text-white py-2 px-3 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDuplicate(product)}
+            className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+            title="Duplicate"
+          >
+            <Copy size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(product._id)}
+            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 
   if (loading && products.length === 0) {
@@ -451,7 +646,7 @@ const ProductManagement: React.FC = () => {
                 </p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg">
-                <Package size={24} className="text-purple-600" />
+                <Star size={24} className="text-purple-600" />
               </div>
             </div>
           </div>
@@ -471,9 +666,9 @@ const ProductManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters and Actions */}
         <div className="bg-white p-4 rounded-lg shadow-sm border">
-          <div className="flex gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -486,163 +681,237 @@ const ProductManagement: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="w-48">
+            
+            <div className="flex gap-3">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="">All Categories</option>
                 {categories.map(category => (
                   <option key={category._id} value={category.name}>{category.name}</option>
                 ))}
               </select>
+              
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="featured">Featured</option>
+              </select>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'table' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  <Filter size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  <Package size={16} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Products Table */}
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
-                  <tr key={product._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <img
-                          src={getProductImageUrl(product)}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover mr-4"
-                          onError={(e) => {
-                            const target = e.currentTarget as HTMLImageElement;
-                            target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
-                          }}
-                        />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {product.name}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate max-w-xs">
-                            {product.description}
-                          </div>
-                          {product.featured && (
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                              Featured
-                            </span>
-                          )}
-                          {/* Add accessories display */}
-                          {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 ? (
-                            <div className="mt-1">
-                              <span className="text-xs text-gray-500 font-medium">Available Accessories:</span>
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {product.accessories.slice(0, 2).map((accessory: any, index: number) => (
-                                  <span key={index} className="inline-flex items-center px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full border border-purple-200">
-                                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
-                                    {accessory.name} 
-                                    <span className="ml-1 font-medium">
-                                      {accessory.price === 0 ? '(Free)' : `($${accessory.price})`}
-                                    </span>
-                                  </span>
-                                ))}
-                                {product.accessories.length > 2 && (
-                                  <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">
-                                    +{product.accessories.length - 2} more
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                Customers can select these accessories when purchasing
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-1 text-xs text-gray-500">
-                              No accessories available for this product
-                            </div>
-                          )}
-
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{product.category}</div>
-                      <div className="text-sm text-gray-500 capitalize">{product.gender}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">${product.price}</div>
-                      {product.originalPrice && product.originalPrice > product.price && (
-                        <div className="text-sm text-gray-500 line-through">${product.originalPrice}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {Object.values(product.stock || {}).reduce((sum: number, stock: any) => sum + (stock || 0), 0)} units
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {product.sizes?.length || 0} sizes
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        product.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {product.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-100 transition-colors"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product._id)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-100 transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
           
-          {filteredProducts.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <Package size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500 text-lg">No products found</p>
-              <p className="text-gray-400 text-sm">Create your first product to get started</p>
+          {/* Bulk Actions */}
+          {selectedProducts.length > 0 && (
+            <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-purple-800">
+                  {selectedProducts.length} product(s) selected
+                </span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleBulkAction('activate')}
+                    className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                  >
+                    Activate
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('deactivate')}
+                    className="px-3 py-1 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
+                  >
+                    Deactivate
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('feature')}
+                    className="px-3 py-1 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700"
+                  >
+                    Feature
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('delete')}
+                    className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Products Display */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.length === products.length && products.length > 0}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredProducts.map((product) => (
+                    <tr key={product._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product._id)}
+                          onChange={() => handleSelectProduct(product._id)}
+                          className="w-4 h-4 text-purple-600 bg-white border-gray-300 rounded focus:ring-purple-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <img
+                            src={getProductImageUrl(product)}
+                            alt={product.name}
+                            className="w-12 h-12 rounded-lg object-cover mr-4"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                            }}
+                          />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 flex items-center">
+                              {product.name}
+                              {product.featured && (
+                                <Star size={14} className="text-yellow-500 ml-2" />
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                              {product.description}
+                            </div>
+                            {product.accessories && product.accessories.length > 0 && (
+                              <div className="text-xs text-purple-600 mt-1">
+                                {product.accessories.length} accessories available
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{product.category}</div>
+                        <div className="text-sm text-gray-500 capitalize">{product.gender}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">${product.price}</div>
+                        {product.originalPrice && product.originalPrice > product.price && (
+                          <div className="text-sm text-gray-500 line-through">${product.originalPrice}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {Object.values(product.stock || {}).reduce((sum: number, stock: any) => sum + (stock || 0), 0)} units
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {product.sizes?.length || 0} sizes
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          product.isActive
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-100 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDuplicate(product)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-100 transition-colors"
+                            title="Duplicate"
+                          >
+                            <Copy size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product._id)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-100 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {filteredProducts.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <Package size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 text-lg">No products found</p>
+                <p className="text-gray-400 text-sm">Create your first product to get started</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -718,6 +987,28 @@ const ProductManagement: React.FC = () => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         placeholder="Enter product name"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        SKU
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={formData.sku}
+                          onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="Auto-generated if empty"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, sku: generateSKU() })}
+                          className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Generate
+                        </button>
+                      </div>
                     </div>
 
                     <div>
@@ -1020,7 +1311,7 @@ const ProductManagement: React.FC = () => {
                 {/* Accessories */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Custom Accessories</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">Product Accessories</h3>
                     <button
                       type="button"
                       onClick={() => setShowAccessoryForm(!showAccessoryForm)}
@@ -1030,6 +1321,10 @@ const ProductManagement: React.FC = () => {
                       <span>Add Accessory</span>
                     </button>
                   </div>
+
+                  <p className="text-sm text-gray-600 mb-4">
+                    Add optional accessories that customers can purchase with this product. These will appear as checkboxes during the purchase process.
+                  </p>
 
                   {showAccessoryForm && (
                     <div className="bg-gray-50 p-4 rounded-lg mb-4">
@@ -1045,7 +1340,6 @@ const ProductManagement: React.FC = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="e.g., Premium Gift Box, Extended Warranty"
                           />
-                          <p className="text-xs text-gray-500 mt-1">Enter a descriptive name for the accessory</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1060,7 +1354,6 @@ const ProductManagement: React.FC = () => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             placeholder="5.99 (Enter 0 for free)"
                           />
-                          <p className="text-xs text-gray-500 mt-1">Enter price (0 for free accessory)</p>
                         </div>
                       </div>
                       <div className="flex justify-end space-x-3 mt-4">
@@ -1082,14 +1375,19 @@ const ProductManagement: React.FC = () => {
                     </div>
                   )}
 
-                  {formData.accessories.length > 0 && (
+                  {formData.accessories.length > 0 ? (
                     <div className="space-y-2">
+                      <h4 className="font-medium text-gray-800 mb-3">Current Accessories:</h4>
                       {formData.accessories.map((accessory) => (
-                        <div key={accessory.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={accessory.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                           <div>
                             <span className="font-medium">{accessory.name}</span>
                             <span className="text-gray-600 ml-2">
-                              {accessory.price === 0 ? 'Free' : `$${accessory.price}`}
+                              {accessory.price === 0 ? (
+                                <span className="text-green-600 font-medium">Free</span>
+                              ) : (
+                                <span className="text-purple-600 font-medium">${accessory.price}</span>
+                              )}
                             </span>
                           </div>
                           <button
@@ -1101,6 +1399,12 @@ const ProductManagement: React.FC = () => {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <Package size={48} className="mx-auto text-gray-400 mb-4" />
+                      <p className="text-gray-500">No accessories added yet</p>
+                      <p className="text-sm text-gray-400">Add accessories to give customers more options</p>
                     </div>
                   )}
                 </div>
