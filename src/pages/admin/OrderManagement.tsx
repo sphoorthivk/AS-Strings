@@ -358,12 +358,27 @@ const OrderManagement: React.FC = () => {
                           {item.accessories && item.accessories.length > 0 && (
                             <div className="text-sm text-gray-600 mt-1">
                               <span className="font-medium">Accessories:</span>
-                              <div className="ml-2">
+                              <div className="ml-2 mt-1">
                                 {item.accessories.map((accessory, index) => (
-                                  <div key={index} className="text-xs">
-                                    • {accessory.name} {accessory.price === 0 ? '(Free)' : `(+$${accessory.price})`}
+                                  <div key={index} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200 mb-1">
+                                    <div className="flex items-center">
+                                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                      <span className="font-medium text-blue-700 text-xs">{accessory.name}</span>
+                                    </div>
+                                    <span className="text-blue-600 font-medium text-xs">
+                                      {accessory.price === 0 ? (
+                                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">Free</span>
+                                      ) : (
+                                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">+$${accessory.price}</span>
+                                      )}
+                                    </span>
                                   </div>
                                 ))}
+                                <div className="text-xs text-blue-600 font-medium mt-1 bg-blue-100 p-2 rounded">
+                                  ✓ Customer selected {item.accessories.length} accessory/accessories
+                                  <br />
+                                  Total accessories value: +${(item.accessories.reduce((sum: number, acc: any) => sum + acc.price, 0) * item.quantity).toFixed(2)}
+                                </div>
                               </div>
                             </div>
                           )}

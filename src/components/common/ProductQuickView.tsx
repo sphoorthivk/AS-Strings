@@ -215,10 +215,19 @@ const handleAddToCart = () => {
               {/* Accessories Selection */}
               {product.accessories && Array.isArray(product.accessories) && product.accessories.length > 0 && (
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-3">Available Accessories</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-3">
+                    Available Accessories
+                    <span className="text-sm text-gray-500 font-normal ml-2">
+                      ({selectedAccessories.length} selected)
+                    </span>
+                  </h3>
                   <div className="space-y-2">
                     {product.accessories.map((accessory: any) => (
-                      <label key={accessory.id} className="flex items-center justify-between p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <label key={accessory.id} className={`flex items-center justify-between p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                        selectedAccessories.includes(accessory.id)
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                      }`}>
                         <div className="flex items-center">
                           <input
                             type="checkbox"
@@ -230,7 +239,7 @@ const handleAddToCart = () => {
                                 setSelectedAccessories(selectedAccessories.filter(id => id !== accessory.id));
                               }
                             }}
-                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-2"
+                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3"
                           />
                           <div>
                             <div className="font-medium text-sm">{accessory.name}</div>
@@ -238,19 +247,45 @@ const handleAddToCart = () => {
                               {accessory.price === 0 ? (
                                 <span className="text-green-600 font-medium">Free</span>
                               ) : (
-                                `+$${accessory.price}`
+                                <span className="text-purple-600 font-medium">+$${accessory.price}</span>
                               )}
                             </div>
                           </div>
                         </div>
-                        {accessory.price === 0 && (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-                            Free
-                          </span>
-                        )}
+                        <div className="flex items-center space-x-1">
+                          {accessory.price === 0 ? (
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                              Free
+                            </span>
+                          ) : (
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                              +$${accessory.price}
+                            </span>
+                          )}
+                          {selectedAccessories.includes(accessory.id) && (
+                            <span className="bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                              ✓
+                            </span>
+                          )}
+                        </div>
                       </label>
                     ))}
                   </div>
+                  
+                  {/* Quick Summary */}
+                  {selectedAccessories.length > 0 && (
+                    <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                      <div className="text-sm font-medium text-purple-800">
+                        {selectedAccessories.length} accessory/accessories selected
+                      </div>
+                      <div className="text-sm text-purple-700">
+                        Additional cost: +${selectedAccessories.reduce((sum, accessoryId) => {
+                          const accessory = product.accessories.find((acc: any) => acc.id === accessoryId);
+                          return sum + (accessory ? accessory.price : 0);
+                        }, 0).toFixed(2)}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               {/* Action Buttons */}
