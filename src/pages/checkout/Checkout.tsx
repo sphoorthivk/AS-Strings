@@ -46,7 +46,7 @@ const Checkout: React.FC = () => {
 
   useEffect(() => {
     calculateShippingCost();
-  }, [formData.city, formData.state]);
+  }, [formData.city, formData.state, totalPrice]);
 
   const calculateShippingCost = () => {
     const city = formData.city.toLowerCase();
@@ -129,7 +129,50 @@ const Checkout: React.FC = () => {
     }
   };
 
+  const getProductImageUrl = (product: any) => {
+    // Check for media array first (new format)
+    if (product.media && product.media.length > 0) {
+      const media = product.media[0];
+      if (typeof media === 'string') {
+        if (media.startsWith('http') || media.startsWith('data:')) {
+          return media;
+        }
+        return `http://localhost:5000/api/upload/media/${media}`;
+      }
+      if (media && typeof media === 'object') {
+        if (media.dataUrl) return media.dataUrl;
+        if (media._id) return `http://localhost:5000/api/upload/media/${media._id}`;
+      }
+    }
+    
+    // Check for images array (legacy format)
+    if (product.images && product.images.length > 0) {
+      const image = product.images[0];
+      if (image.startsWith('http') || image.startsWith('data:')) {
+        return image;
+      }
+      return `http://localhost:5000/api/upload/images/${image}`;
+    }
+    
+    // Fallback to placeholder
+    return 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+  };
+
   const finalTotal = totalPrice + shippingCost;
+
+  // Show loading state while checking auth/cart
+  if (!user || items.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading checkout...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -308,9 +351,13 @@ const Checkout: React.FC = () => {
               {items.map((item) => (
                 <div key={`${item.productId}-${item.size}`} className="flex items-center space-x-3">
                   <img
-                    src={item.product.images[0]}
+                    src={getProductImageUrl(item.product)}
                     alt={item.product.name}
                     className="w-16 h-16 object-cover rounded-lg"
+                    onError={(e) => {
+                      const target = e.currentTarget as HTMLImageElement;
+                      target.src = 'https://images.pexels.com/photos/1021693/pexels-photo-1021693.jpeg?auto=compress&cs=tinysrgb&w=600';
+                    }}
                   />
                   <div className="flex-1">
                     <h4 className="font-medium">{item.product.name}</h4>
