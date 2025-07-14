@@ -87,8 +87,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
     { path: '/admin/users', icon: Users, label: 'Users' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
-    { path: '/admin/reports', icon: FileText, label: 'Reports' },
-    { path: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
