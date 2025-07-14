@@ -86,7 +86,7 @@ const Contact: React.FC = () => {
   const faqs = [
     {
       question: 'What are your shipping charges?',
-      answer: 'We offer free shipping on orders over ₹100. For orders below ₹100, shipping charges vary by location (₹5-₹50).'
+      answer: 'We offer free shipping on orders over $100. For orders below $100, shipping charges vary by location ($5-$50).'
     },
     {
       question: 'How long does delivery take?',
