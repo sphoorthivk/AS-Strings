@@ -2,61 +2,162 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, DollarSign, ShoppingCart, Users, Calendar, Download } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { productsAPI, ordersAPI, categoriesAPI } from '../../services/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const Analytics: React.FC = () => {
   const [dateRange, setDateRange] = useState('30d');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    avgOrderValue: 0,
+    conversionRate: 3.2,
+    salesData: [],
+    categoryData: [],
+    topProducts: [],
+    customerMetrics: [],
+    trafficSources: []
+  });
 
-  const salesData = [
-    { date: '2024-01-01', revenue: 4200, orders: 45, customers: 32 },
-    { date: '2024-01-02', revenue: 3800, orders: 38, customers: 28 },
-    { date: '2024-01-03', revenue: 5200, orders: 52, customers: 41 },
-    { date: '2024-01-04', revenue: 4800, orders: 48, customers: 35 },
-    { date: '2024-01-05', revenue: 6100, orders: 61, customers: 48 },
-    { date: '2024-01-06', revenue: 5500, orders: 55, customers: 42 },
-    { date: '2024-01-07', revenue: 7200, orders: 72, customers: 58 },
-  ];
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [dateRange]);
 
-  const categoryData = [
-    { name: 'Dresses', value: 35, revenue: 15400, color: '#8B5CF6' },
-    { name: 'T-Shirts', value: 25, revenue: 11000, color: '#EC4899' },
-    { name: 'Jeans', value: 20, revenue: 8800, color: '#10B981' },
-    { name: 'Shoes', value: 15, revenue: 6600, color: '#F59E0B' },
-    { name: 'Accessories', value: 5, revenue: 2200, color: '#6B7280' },
-  ];
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch real data from APIs
+      const [ordersResponse, productsResponse, categoriesResponse] = await Promise.all([
+        ordersAPI.getAllOrders({ limit: 1000 }),
+        productsAPI.getProducts({ limit: 1000 }),
+        categoriesAPI.getCategories()
+      ]);
 
-  const topProducts = [
-    { name: 'Elegant Summer Dress', sales: 156, revenue: 14040, growth: 12.5 },
-    { name: 'Classic Denim Jacket', sales: 134, revenue: 10720, growth: 8.3 },
-    { name: 'Casual Cotton T-Shirt', sales: 298, revenue: 7445, growth: 15.2 },
-    { name: 'Premium Leather Boots', sales: 89, revenue: 13351, growth: -2.1 },
-    { name: 'Floral Print Blouse', sales: 167, revenue: 10013, growth: 6.8 },
-  ];
+      const orders = ordersResponse.data.orders || [];
+      const products = productsResponse.data.products || [];
+      const categories = categoriesResponse.data || [];
 
-  const customerMetrics = [
-    { metric: 'New Customers', value: 245, change: 12.5, period: 'vs last month' },
-    { metric: 'Returning Customers', value: 1834, change: 8.2, period: 'vs last month' },
-    { metric: 'Customer Lifetime Value', value: 285.50, change: 15.3, period: 'average' },
-    { metric: 'Churn Rate', value: 3.2, change: -1.1, period: 'vs last month' },
-  ];
+      // Calculate metrics
+      const totalRevenue = orders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+      const totalOrders = orders.length;
+      const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-  const trafficSources = [
-    { source: 'Organic Search', visitors: 4250, percentage: 42.5, color: '#8B5CF6' },
-    { source: 'Direct', visitors: 2800, percentage: 28.0, color: '#EC4899' },
-    { source: 'Social Media', visitors: 1500, percentage: 15.0, color: '#10B981' },
-    { source: 'Email', visitors: 900, percentage: 9.0, color: '#F59E0B' },
-    { source: 'Paid Ads', visitors: 550, percentage: 5.5, color: '#6B7280' },
-  ];
+      // Generate sales data for the last 7 days
+      const salesData = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        
+        // Filter orders for this date
+        const dayOrders = orders.filter((order: any) => {
+          const orderDate = new Date(order.createdAt);
+          return orderDate.toDateString() === date.toDateString();
+        });
+        
+        const dayRevenue = dayOrders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+        const dayCustomers = new Set(dayOrders.map((order: any) => order.user?._id || order.user)).size;
+        
+        salesData.push({
+          date: date.toISOString().split('T')[0],
+          revenue: dayRevenue,
+          orders: dayOrders.length,
+          customers: dayCustomers
+        });
+      }
+
+      // Calculate category distribution
+      const categoryStats: { [key: string]: { value: number, revenue: number } } = {};
+      
+      orders.forEach((order: any) => {
+        order.items?.forEach((item: any) => {
+          const category = item.product?.category || 'Unknown';
+          if (!categoryStats[category]) {
+            categoryStats[category] = { value: 0, revenue: 0 };
+          }
+          categoryStats[category].value += item.quantity || 1;
+          categoryStats[category].revenue += (item.price || 0) * (item.quantity || 1);
+        });
+      });
+
+      const categoryData = Object.entries(categoryStats)
+        .map(([name, stats], index) => ({
+          name,
+          value: Math.round((stats.value / Object.values(categoryStats).reduce((sum, s) => sum + s.value, 0)) * 100),
+          revenue: stats.revenue,
+          color: ['#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#6B7280'][index % 5]
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+
+      // Calculate top products
+      const productStats: { [key: string]: { sales: number, revenue: number, product: any } } = {};
+      
+      orders.forEach((order: any) => {
+        order.items?.forEach((item: any) => {
+          const productId = item.product?._id || item.productId;
+          if (!productStats[productId]) {
+            productStats[productId] = { sales: 0, revenue: 0, product: item.product };
+          }
+          productStats[productId].sales += item.quantity || 1;
+          productStats[productId].revenue += (item.price || 0) * (item.quantity || 1);
+        });
+      });
+
+      const topProducts = Object.values(productStats)
+        .filter(stat => stat.product?.name)
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5)
+        .map(stat => ({
+          name: stat.product.name,
+          sales: stat.sales,
+          revenue: stat.revenue,
+          growth: Math.random() * 20 - 5 // Mock growth data
+        }));
+
+      // Customer metrics (mock data based on real orders)
+      const uniqueCustomers = new Set(orders.map((order: any) => order.user?._id || order.user)).size;
+      const customerMetrics = [
+        { metric: 'New Customers', value: Math.floor(uniqueCustomers * 0.3), change: 12.5, period: 'vs last month' },
+        { metric: 'Returning Customers', value: Math.floor(uniqueCustomers * 0.7), change: 8.2, period: 'vs last month' },
+        { metric: 'Customer Lifetime Value', value: avgOrderValue * 3.5, change: 15.3, period: 'average' },
+        { metric: 'Churn Rate', value: 3.2, change: -1.1, period: 'vs last month' },
+      ];
+
+      // Traffic sources (mock data)
+      const trafficSources = [
+        { source: 'Organic Search', visitors: 4250, percentage: 42.5, color: '#8B5CF6' },
+        { source: 'Direct', visitors: 2800, percentage: 28.0, color: '#EC4899' },
+        { source: 'Social Media', visitors: 1500, percentage: 15.0, color: '#10B981' },
+        { source: 'Email', visitors: 900, percentage: 9.0, color: '#F59E0B' },
+        { source: 'Paid Ads', visitors: 550, percentage: 5.5, color: '#6B7280' },
+      ];
+
+      setAnalyticsData({
+        totalRevenue,
+        totalOrders,
+        avgOrderValue,
+        conversionRate: 3.2, // Mock data
+        salesData,
+        categoryData,
+        topProducts,
+        customerMetrics,
+        trafficSources
+      });
+
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const exportData = () => {
-    // Simulate data export
     const data = {
-      salesData,
-      categoryData,
-      topProducts,
-      customerMetrics,
-      trafficSources,
-      exportDate: new Date().toISOString()
+      ...analyticsData,
+      exportDate: new Date().toISOString(),
+      dateRange
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -69,6 +170,16 @@ const Analytics: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex justify-center items-center h-64">
+          <LoadingSpinner size="large" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -105,7 +216,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">$45,230</p>
+                <p className="text-2xl font-bold text-gray-900">${analyticsData.totalRevenue.toFixed(2)}</p>
                 <p className="text-sm text-green-600 mt-1">+12.5% vs last month</p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
@@ -118,7 +229,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">1,234</p>
+                <p className="text-2xl font-bold text-gray-900">{analyticsData.totalOrders}</p>
                 <p className="text-sm text-green-600 mt-1">+8.2% vs last month</p>
               </div>
               <div className="p-3 bg-blue-50 rounded-lg">
@@ -131,7 +242,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                <p className="text-2xl font-bold text-gray-900">3.2%</p>
+                <p className="text-2xl font-bold text-gray-900">{analyticsData.conversionRate}%</p>
                 <p className="text-sm text-green-600 mt-1">+0.5% vs last month</p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg">
@@ -144,7 +255,7 @@ const Analytics: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold text-gray-900">$89.50</p>
+                <p className="text-2xl font-bold text-gray-900">${analyticsData.avgOrderValue.toFixed(2)}</p>
                 <p className="text-sm text-green-600 mt-1">+5.1% vs last month</p>
               </div>
               <div className="p-3 bg-yellow-50 rounded-lg">
@@ -160,7 +271,7 @@ const Analytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Revenue Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={salesData}>
+              <AreaChart data={analyticsData.salesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString()} />
                 <YAxis />
@@ -176,25 +287,31 @@ const Analytics: React.FC = () => {
           {/* Sales by Category */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Sales by Category</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`${value}%`, 'Share']} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+            {analyticsData.categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={analyticsData.categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {analyticsData.categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value}%`, 'Share']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-64 text-gray-500">
+                No category data available
+              </div>
+            )}
           </div>
         </div>
 
@@ -202,7 +319,7 @@ const Analytics: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Orders & Customer Acquisition</h3>
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={salesData}>
+            <LineChart data={analyticsData.salesData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString()} />
               <YAxis yAxisId="left" />
@@ -222,20 +339,26 @@ const Analytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Top Performing Products</h3>
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{product.name}</h4>
-                    <p className="text-sm text-gray-600">{product.sales} sales</p>
+              {analyticsData.topProducts.length > 0 ? (
+                analyticsData.topProducts.map((product, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{product.name}</h4>
+                      <p className="text-sm text-gray-600">{product.sales} sales</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-900">${product.revenue.toFixed(2)}</p>
+                      <p className={`text-sm ${product.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {product.growth >= 0 ? '+' : ''}{product.growth.toFixed(1)}%
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">${product.revenue.toLocaleString()}</p>
-                    <p className={`text-sm ${product.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {product.growth >= 0 ? '+' : ''}{product.growth}%
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No product data available
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -243,7 +366,7 @@ const Analytics: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Traffic Sources</h3>
             <div className="space-y-4">
-              {trafficSources.map((source, index) => (
+              {analyticsData.trafficSources.map((source, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div 
@@ -266,12 +389,12 @@ const Analytics: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Customer Metrics</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {customerMetrics.map((metric, index) => (
+            {analyticsData.customerMetrics.map((metric, index) => (
               <div key={index} className="text-center">
                 <p className="text-sm font-medium text-gray-600 mb-2">{metric.metric}</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {metric.metric.includes('Value') ? '$' : ''}
-                  {metric.value}
+                  {typeof metric.value === 'number' ? metric.value.toFixed(metric.metric.includes('Value') ? 2 : 0) : metric.value}
                   {metric.metric.includes('Rate') ? '%' : ''}
                 </p>
                 <p className={`text-sm mt-1 ${metric.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
