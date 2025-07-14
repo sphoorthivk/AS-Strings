@@ -139,7 +139,12 @@ export const wishlistAPI = {
 export const paymentSettingsAPI = {
   getSettings: () => api.get('/payment-settings'),
   
-  updateSettings: (data: any) => api.put('/payment-settings', data),
+  updateSettings: (data: any) => {
+    console.log('=== API CALL: UPDATE PAYMENT SETTINGS ===');
+    console.log('Data being sent:', JSON.stringify(data, null, 2));
+    console.log('API URL:', `${API_BASE_URL}/payment-settings`);
+    return api.put('/payment-settings', data);
+  },
 };
 
 // Add request interceptor for debugging

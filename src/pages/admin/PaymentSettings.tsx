@@ -26,29 +26,38 @@ const PaymentSettings: React.FC = () => {
 
   const fetchSettings = async () => {
     try {
+      console.log('Fetching payment settings...');
       const response = await paymentSettingsAPI.getSettings();
+      console.log('Payment settings fetched:', response.data);
       setSettings(response.data);
-    } catch (error) {
-      console.error('Error fetching payment settings:', error);
-      showToast('Error loading payment settings', 'error');
+    } catch (error: unknown) {
+      console.error(error);
+      let errorMessage = 'An unexpected error occurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    console.log('=== PAYMENT SETTINGS SAVE DEBUG ===');
+    console.log('Current settings:', settings);
+
     // Validation
-    if (settings.qrEnabled && !settings.upiId.trim()) {
+    if (settings.qrEnabled && (!settings.upiId || !settings.upiId.trim())) {
       showToast('UPI ID is required when QR payment is enabled', 'error');
       return;
     }
 
-    if (settings.qrEnabled && !settings.businessName.trim()) {
+    if (settings.qrEnabled && (!settings.businessName || !settings.businessName.trim())) {
       showToast('Business name is required when QR payment is enabled', 'error');
       return;
     }
 
-    if (settings.qrEnabled && !settings.whatsappNumber.trim()) {
+    if (settings.qrEnabled && (!settings.whatsappNumber || !settings.whatsappNumber.trim())) {
       showToast('WhatsApp number is required for payment verification', 'error');
       return;
     }
@@ -58,18 +67,26 @@ const PaymentSettings: React.FC = () => {
       return;
     }
 
+    console.log('Validation passed, attempting to save...');
+
     try {
       setSaving(true);
-      await paymentSettingsAPI.updateSettings(settings);
+      const response = await paymentSettingsAPI.updateSettings(settings);
+      console.log('Save response:', response);
       showToast('Payment settings updated successfully!', 'success');
-    } catch (error) {
-      console.error('Error updating payment settings:', error);
-      showToast('Error updating payment settings', 'error');
+    } catch (error: unknown) {
+      console.error('=== PAYMENT SETTINGS ERROR ===');
+      console.error('Full error object:', error);
+      let errorMessage = 'Error updating payment settings';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      showToast(errorMessage, 'error');
     } finally {
       setSaving(false);
+      console.log('=== END PAYMENT SETTINGS SAVE ===');
     }
   };
-
   const handleInputChange = (field: string, value: any) => {
     setSettings(prev => ({
       ...prev,

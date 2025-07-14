@@ -28,18 +28,27 @@ const auth = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
   try {
-    console.log('Admin auth middleware called');
+    console.log('=== ADMIN AUTH MIDDLEWARE ===');
+    console.log('Request URL:', req.url);
+    console.log('Request method:', req.method);
+    
     await auth(req, res, () => {
-      console.log('User authenticated:', req.user?.email, 'Role:', req.user?.role);
+      console.log('User authenticated:', req.user?.email);
+      console.log('User role:', req.user?.role);
+      console.log('User ID:', req.user?._id);
+      
       if (req.user.role !== 'admin') {
-        console.log('User is not admin:', req.user.email, req.user.role);
+        console.log('ACCESS DENIED: User is not admin');
         return res.status(403).json({ message: 'Access denied. Admin only.' });
       }
-      console.log('Admin access granted:', req.user.email);
+      console.log('Admin access granted');
+      console.log('=== END ADMIN AUTH ===');
       next();
     });
   } catch (error) {
-    console.error('Admin auth error:', error);
+    console.error('=== ADMIN AUTH ERROR ===');
+    console.error('Error:', error);
+    console.error('=== END ADMIN AUTH ERROR ===');
     res.status(401).json({ message: 'Authorization failed' });
   }
 };
