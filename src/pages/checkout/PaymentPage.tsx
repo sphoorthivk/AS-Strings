@@ -63,6 +63,10 @@ const PaymentPage: React.FC = () => {
     }
   };
 
+
+
+
+
   const handleWhatsAppContact = () => {
     if (!paymentSettings?.whatsappNumber) return;
     
@@ -251,6 +255,18 @@ const PaymentPage: React.FC = () => {
                       </button>
                     </div>
                   </div>
+                  
+                    {/* Direct UPI Payment Link */}
+<div className="mt-4 text-center">
+  <a
+    href={generateUPIString()}
+    className="text-purple-600 underline text-sm font-medium hover:text-purple-800"
+  >
+    Click here to pay using UPI app
+  </a>
+  <p className="text-xs text-gray-500 mt-1">(Supported by PhonePe, Google Pay, Paytm, etc.)</p>
+</div>
+
 
                   {/* WhatsApp Contact */}
                   <div className="mt-6">
