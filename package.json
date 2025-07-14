@@ -9,8 +9,10 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:server\"",
     "seed": "cd server && node seedData.js",
     "build": "vite build",
+    "build:server": "cd server && npm install",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
