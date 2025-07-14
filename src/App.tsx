@@ -15,6 +15,8 @@ import Checkout from './pages/checkout/Checkout';
 import OrderConfirmation from './pages/orders/OrderConfirmation';
 import MyOrders from './pages/orders/MyOrders';
 import OrderDetail from './pages/orders/OrderDetail';
+import PaymentPage from './pages/checkout/PaymentPage';
+import PaymentSettings from './pages/admin/PaymentSettings';
 import CategoryManagement from './pages/admin/CategoryManagement';
 import DeliveryZoneManagement from './pages/admin/DeliveryZoneManagement';
 import Profile from './pages/profile/Profile';
@@ -44,7 +46,9 @@ function App() {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/payment" element={<PaymentPage />} />
                   <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
+                  <Route path="/order-confirmation" element={<OrderConfirmation />} />
                   <Route path="/orders" element={<MyOrders />} />
                   <Route path="/order/:orderId" element={<OrderDetail />} />
                   <Route path="/profile" element={<Profile />} />
@@ -60,6 +64,7 @@ function App() {
                   <Route path="/admin/analytics" element={<Analytics />} />
                   <Route path="/admin/categories" element={<CategoryManagement />} />
                   <Route path="/admin/delivery-zones" element={<DeliveryZoneManagement />} />
+                  <Route path="/admin/payment-settings" element={<PaymentSettings />} />
                 </Routes>
               </Layout>
             </Router>

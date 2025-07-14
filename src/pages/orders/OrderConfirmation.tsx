@@ -295,7 +295,7 @@ const OrderConfirmation: React.FC = () => {
               <li>• You'll receive a confirmation email once payment is verified</li>
               <li>• Your order will be processed after payment verification</li>
               <li>• Estimated delivery: 3-7 business days after verification</li>
-              <li>• If you haven't sent the payment screenshot, please do so via WhatsApp</li>
+              <li>• Status: "Pending Payment Verification"</li>
             </ul>
           ) : (
             <ul className="space-y-2 text-sm text-gray-700">

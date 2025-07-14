@@ -67,7 +67,7 @@ const PaymentPage: React.FC = () => {
     if (!paymentSettings?.whatsappNumber) return;
     
     const message = encodeURIComponent(
-      `Hi! I've made a payment of ₹${totalAmount} for my order. Please find the payment screenshot attached.`
+      `Hi! I've made a payment of $${totalAmount} for my order. Please find the payment screenshot attached.`
     );
     const whatsappUrl = `https://wa.me/${paymentSettings.whatsappNumber.replace(/[^0-9]/g, '')}?text=${message}`;
     window.open(whatsappUrl, '_blank');
@@ -79,8 +79,7 @@ const PaymentPage: React.FC = () => {
       state: {
         orderData: {
           ...orderData,
-          paymentMethod: selectedMethod,
-          paymentStatus: selectedMethod === 'cod' ? 'pending' : 'pending_verification'
+          paymentMethod: selectedMethod
         },
         totalAmount
       }
@@ -151,7 +150,7 @@ const PaymentPage: React.FC = () => {
             </button>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">Complete Payment</h1>
-              <p className="text-gray-600">Total Amount: ₹{totalAmount}</p>
+              <p className="text-gray-600">Total Amount: ${totalAmount}</p>
             </div>
           </div>
 
@@ -222,7 +221,7 @@ const PaymentPage: React.FC = () => {
                   <h3 className="font-semibold text-gray-800 mb-3">Payment Instructions:</h3>
                   <div className="space-y-3 text-sm text-gray-600">
                     <p>1. Scan the QR code with any UPI app</p>
-                    <p>2. Pay the exact amount: ₹{totalAmount}</p>
+                    <p>2. Pay the exact amount: ${totalAmount}</p>
                     <p>3. Take a screenshot of the payment confirmation</p>
                     <p>4. Send the screenshot via WhatsApp</p>
                   </div>
@@ -284,7 +283,7 @@ const PaymentPage: React.FC = () => {
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <h3 className="font-semibold text-green-800 mb-2">Payment Details:</h3>
                   <ul className="text-sm text-green-700 space-y-1">
-                    <li>• Pay ₹{totalAmount} when your order arrives</li>
+                    <li>• Pay ${totalAmount} when your order arrives</li>
                     <li>• Please keep the exact amount ready</li>
                     <li>• Our delivery partner will collect the payment</li>
                     <li>• You can pay in cash only</li>
