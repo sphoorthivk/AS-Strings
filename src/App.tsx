@@ -25,6 +25,7 @@ import UserManagement from './pages/admin/UserManagement';
 import Analytics from './pages/admin/Analytics';
 import Wishlist from './pages/wishlist/Wishlist';
 import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -51,7 +52,7 @@ function App() {
                   <Route path="/products/:gender/:category" element={<ProductList />} />
                   <Route path="/search" element={<ProductList />} />
                   <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<div className="container mx-auto px-4 py-16"><h1 className="text-3xl font-bold text-center">Contact Us</h1></div>} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/admin" element={<Dashboard />} />
                   <Route path="/admin/products" element={<ProductManagement />} />
                   <Route path="/admin/orders" element={<OrderManagement />} />
