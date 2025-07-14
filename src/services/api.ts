@@ -72,6 +72,9 @@ export const ordersAPI = {
   
   updateOrderStatus: (id: string, orderStatus: string, trackingNumber?: string) =>
     api.put(`/orders/${id}/status`, { orderStatus, trackingNumber }),
+  
+  updateOrderPaymentStatus: (id: string, paymentStatus: string) =>
+    api.put(`/orders/${id}/payment-status`, { paymentStatus }),
 };
 
 // Categories API

@@ -186,6 +186,27 @@ router.put('/:id/status', adminAuth, async (req, res) => {
   }
 });
 
+// Update payment status (Admin only)
+router.put('/:id/payment-status', adminAuth, async (req, res) => {
+  try {
+    const { paymentStatus } = req.body;
+    
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { paymentStatus },
+      { new: true }
+    ).populate('user items.product');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get single order
 router.get('/:id', auth, async (req, res) => {
   try {

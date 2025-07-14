@@ -158,8 +158,11 @@ const OrderConfirmation: React.FC = () => {
           <p className="text-gray-600">
             Thank you for your purchase. Your order has been successfully placed.
             {order.paymentMethod === 'qr' && (
-              <span className="block mt-2 text-yellow-600 font-medium">
-                Status: Pending Payment Verification
+              <span className="block mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <span className="text-yellow-800 font-medium">⏳ Status: Pending Payment Verification</span>
+                <span className="block text-sm text-yellow-700 mt-1">
+                  We'll verify your payment within 2-4 hours and update your order status.
+                </span>
               </span>
             )}
           </p>
@@ -295,7 +298,8 @@ const OrderConfirmation: React.FC = () => {
               <li>• You'll receive a confirmation email once payment is verified</li>
               <li>• Your order will be processed after payment verification</li>
               <li>• Estimated delivery: 3-7 business days after verification</li>
-              <li>• Status: "Pending Payment Verification"</li>
+              <li>• Current status: "Pending Payment Verification"</li>
+              <li>• Check your order status in "My Orders" section</li>
             </ul>
           ) : (
             <ul className="space-y-2 text-sm text-gray-700">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Edit, Search, Filter, Package, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, Edit, Search, Filter, Package, Truck, CheckCircle, XCircle, CreditCard, Clock } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { ordersAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -14,8 +14,10 @@ const OrderManagement: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
+  const [newPaymentStatus, setNewPaymentStatus] = useState('');
 
   const orderStatuses = [
     { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Package },
@@ -23,6 +25,12 @@ const OrderManagement: React.FC = () => {
     { value: 'shipped', label: 'Shipped', color: 'bg-purple-100 text-purple-800', icon: Truck },
     { value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-800', icon: CheckCircle },
     { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800', icon: XCircle },
+  ];
+
+  const paymentStatuses = [
+    { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
+    { value: 'completed', label: 'Completed', color: 'bg-green-100 text-green-800' },
+    { value: 'failed', label: 'Failed', color: 'bg-red-100 text-red-800' },
   ];
 
   useEffect(() => {
@@ -99,6 +107,22 @@ const OrderManagement: React.FC = () => {
       fetchOrders();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Error updating order status');
+    }
+  };
+
+  const handleUpdatePaymentStatus = async () => {
+    if (!selectedOrder || !newPaymentStatus) return;
+    
+    try {
+      // Update payment status via API
+      await ordersAPI.updateOrderPaymentStatus(selectedOrder._id, newPaymentStatus);
+      setShowPaymentModal(false);
+      setShowOrderModal(false);
+      setNewPaymentStatus('');
+      fetchOrders();
+      alert('Payment status updated successfully!');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Error updating payment status');
     }
   };
 
@@ -200,6 +224,9 @@ const OrderManagement: React.FC = () => {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -234,6 +261,30 @@ const OrderManagement: React.FC = () => {
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusInfo.color}`}>
                             {statusInfo.label}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              order.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                              order.paymentStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.paymentStatus?.charAt(0).toUpperCase() + order.paymentStatus?.slice(1) || 'Pending'}
+                            </span>
+                            {order.paymentMethod === 'qr' && order.paymentStatus === 'pending' && (
+                              <button
+                                onClick={() => {
+                                  setSelectedOrder(order);
+                                  setNewPaymentStatus(order.paymentStatus || 'pending');
+                                  setShowPaymentModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-100 transition-colors"
+                                title="Update Payment Status"
+                              >
+                                <CreditCard size={14} />
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString()}
@@ -453,6 +504,17 @@ const OrderManagement: React.FC = () => {
                   >
                     Update Status
                   </button>
+                  {selectedOrder.paymentMethod === 'qr' && (
+                    <button
+                      onClick={() => {
+                        setNewPaymentStatus(selectedOrder.paymentStatus || 'pending');
+                        setShowPaymentModal(true);
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Update Payment
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -510,6 +572,62 @@ const OrderManagement: React.FC = () => {
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                   >
                     Update Status
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Status Update Modal */}
+        {showPaymentModal && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-full max-w-md">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold">Update Payment Status</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Order #{selectedOrder._id.slice(-8).toUpperCase()} - {selectedOrder.paymentMethod?.toUpperCase()}
+                </p>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Status
+                  </label>
+                  <select
+                    value={newPaymentStatus}
+                    onChange={(e) => setNewPaymentStatus(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  >
+                    {paymentStatuses.map(status => (
+                      <option key={status.value} value={status.value}>{status.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">Payment Verification Guide:</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Check WhatsApp for payment screenshot</li>
+                    <li>• Verify amount matches order total</li>
+                    <li>• Confirm transaction ID/reference</li>
+                    <li>• Mark as "Completed" only after verification</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    onClick={() => setShowPaymentModal(false)}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdatePaymentStatus}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Update Payment Status
                   </button>
                 </div>
               </div>

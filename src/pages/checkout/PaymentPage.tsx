@@ -202,7 +202,7 @@ const PaymentPage: React.FC = () => {
                       <img
                         src={paymentSettings.qrCodeUrl}
                         alt="Payment QR Code"
-                        className="w-48 h-48 mx-auto"
+                        className="w-48 h-48 mx-auto object-contain"
                       />
                     ) : (
                       <div className="w-48 h-48 mx-auto bg-gray-200 rounded-lg flex items-center justify-center">
@@ -213,7 +213,11 @@ const PaymentPage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">Scan with any UPI app</p>
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-800">Scan with any UPI app</p>
+                    <p className="text-xs text-gray-600">{paymentSettings.businessName}</p>
+                    <p className="text-xs text-gray-500">{paymentSettings.upiId}</p>
+                  </div>
                 </div>
 
                 {/* Payment Instructions */}
@@ -224,6 +228,7 @@ const PaymentPage: React.FC = () => {
                     <p>2. Pay the exact amount: ${totalAmount}</p>
                     <p>3. Take a screenshot of the payment confirmation</p>
                     <p>4. Send the screenshot via WhatsApp</p>
+                    <p>5. Wait for payment verification (2-4 hours)</p>
                   </div>
 
                   {/* UPI String */}
@@ -259,6 +264,11 @@ const PaymentPage: React.FC = () => {
                     <p className="text-xs text-gray-500 mt-2 text-center">
                       WhatsApp: {paymentSettings.whatsappNumber}
                     </p>
+                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs text-yellow-800">
+                        <strong>Important:</strong> Your order will be marked as "Pending Payment Verification" until we confirm your payment. This usually takes 2-4 hours during business hours.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
