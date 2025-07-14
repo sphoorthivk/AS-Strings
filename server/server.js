@@ -14,6 +14,7 @@ import orderRoutes from './routes/orders.js';
 import categoryRoutes from './routes/categories.js';
 import uploadRoutes from './routes/upload.js';
 import wishlistRoutes from './routes/wishlist.js';
+import paymentSettingsRoutes from './routes/paymentSettings.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +42,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/payment-settings', paymentSettingsRoutes);
 
 // Add multer error handling middleware
 app.use(handleMulterError);

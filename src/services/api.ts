@@ -132,6 +132,13 @@ export const wishlistAPI = {
   clearWishlist: () => api.delete('/wishlist'),
 };
 
+// Payment Settings API
+export const paymentSettingsAPI = {
+  getSettings: () => api.get('/payment-settings'),
+  
+  updateSettings: (data: any) => api.put('/payment-settings', data),
+};
+
 // Add request interceptor for debugging
 api.interceptors.request.use((config) => {
   const token = Cookies.get('token');

@@ -173,56 +173,33 @@ const Checkout: React.FC = () => {
       return;
     }
     
-    setLoading(true);
+    // Navigate to payment page with order data
+    const orderData = {
+      items: items.map(item => ({
+        productId: item.productId,
+        size: item.size,
+        quantity: item.quantity,
+        accessories: item.accessories || [],
+        price: item.product.price
+      })),
+      shippingAddress: {
+        fullName: formData.fullName.trim(),
+        phone: formData.phone.trim(),
+        street: formData.street.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zipCode: formData.zipCode.trim(),
+        country: formData.country
+      },
+      shippingCost: shippingCost
+    };
 
-    try {
-      const orderData = {
-        items: items.map(item => ({
-          productId: item.productId,
-          size: item.size,
-          quantity: item.quantity,
-          accessories: item.accessories || [],
-          price: item.product.price // Include the price for order processing
-        })),
-        shippingAddress: {
-          fullName: formData.fullName.trim(),
-          phone: formData.phone.trim(),
-          street: formData.street.trim(),
-          city: formData.city.trim(),
-          state: formData.state.trim(),
-          zipCode: formData.zipCode.trim(),
-          country: formData.country
-        },
-        paymentMethod: formData.paymentMethod,
-        shippingCost: shippingCost
-      };
-
-      console.log('Placing order with data:', orderData);
-      const response = await ordersAPI.createOrder(orderData);
-      console.log('Order created successfully:', response.data);
-      
-      // Clear cart before navigation
-      clearCart();
-      showToast('Order placed successfully!', 'success');
-      
-      // Add a small delay to ensure the order is fully processed
-      setTimeout(() => {
-      navigate(`/order-confirmation/${response.data._id}`);
-      }, 500);
-      
-    } catch (error: any) {
-      console.error('Order creation error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Error placing order. Please try again.';
-      showToast(errorMessage, 'error');
-      
-      // If it's a validation error, don't clear the form
-      if (error.response?.status !== 400) {
-        // For server errors, allow user to retry
-        console.log('Server error, allowing retry');
+    navigate('/payment', {
+      state: {
+        orderData,
+        totalAmount: finalTotal
       }
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   // Show loading state while checking auth/cart
@@ -440,11 +417,9 @@ const Checkout: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2"
             >
-              {loading && <LoadingSpinner size="small" />}
-              <span>{loading ? 'Placing Order...' : 'Place Order'}</span>
+              <span>Proceed to Payment</span>
             </button>
           </form>
         </div>

@@ -1,21 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Package, Truck, MapPin, CreditCard } from 'lucide-react';
 import { ordersAPI } from '../../services/api';
+import { useCart } from '../../contexts/CartContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const OrderConfirmation: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const location = useLocation();
+  const { clearCart } = useCart();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get order data from location state (for new orders)
+  const stateOrderData = location.state?.orderData;
+  const stateTotalAmount = location.state?.totalAmount;
   useEffect(() => {
-    if (orderId) {
+    if (stateOrderData) {
+      // Handle new order from payment page
+      handleNewOrder();
+    } else if (orderId) {
+      // Handle existing order lookup
       fetchOrder();
     }
-  }, [orderId]);
+  }, [orderId, stateOrderData]);
 
+  const handleNewOrder = async () => {
+    try {
+      setLoading(true);
+      console.log('Creating order with data:', stateOrderData);
+      
+      const response = await ordersAPI.createOrder(stateOrderData);
+      console.log('Order created successfully:', response.data);
+      
+      setOrder(response.data);
+      clearCart(); // Clear cart after successful order creation
+      setError(null);
+    } catch (error: any) {
+      console.error('Order creation error:', error);
+      setError(error.response?.data?.message || 'Failed to create order');
+    } finally {
+      setLoading(false);
+    }
+  };
   const getProductImageUrl = (product: any) => {
     // Check for media array first (new format)
     if (product.media && product.media.length > 0) {
@@ -127,7 +155,14 @@ const OrderConfirmation: React.FC = () => {
         <div className="text-center mb-8">
           <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
-          <p className="text-gray-600">Thank you for your purchase. Your order has been successfully placed.</p>
+          <p className="text-gray-600">
+            Thank you for your purchase. Your order has been successfully placed.
+            {order.paymentMethod === 'qr' && (
+              <span className="block mt-2 text-yellow-600 font-medium">
+                Status: Pending Payment Verification
+              </span>
+            )}
+          </p>
         </div>
 
         {/* Order Details */}
@@ -254,15 +289,23 @@ const OrderConfirmation: React.FC = () => {
             <Truck className="mr-2" size={20} />
             What's Next?
           </h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li>• We'll send you an email confirmation shortly</li>
-            <li>• Your order will be processed within 1-2 business days</li>
-            <li>• You'll receive tracking information once your order ships</li>
-            <li>• Estimated delivery: 3-7 business days</li>
-            {order.paymentMethod === 'cod' && (
+          {order.paymentMethod === 'qr' ? (
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>• We'll verify your payment within 2-4 hours</li>
+              <li>• You'll receive a confirmation email once payment is verified</li>
+              <li>• Your order will be processed after payment verification</li>
+              <li>• Estimated delivery: 3-7 business days after verification</li>
+              <li>• If you haven't sent the payment screenshot, please do so via WhatsApp</li>
+            </ul>
+          ) : (
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>• We'll send you an email confirmation shortly</li>
+              <li>• Your order will be processed within 1-2 business days</li>
+              <li>• You'll receive tracking information once your order ships</li>
+              <li>• Estimated delivery: 3-7 business days</li>
               <li>• Please keep the exact amount ready for cash on delivery</li>
-            )}
-          </ul>
+            </ul>
+          )}
         </div>
 
         {/* Action Buttons */}
