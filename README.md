@@ -1,67 +1,61 @@
-Shreads: E-Commerce Clothing Platform
+AS-Strings: E-Commerce Website
 
 Description:
-A modern, full-stack online clothing shopping platform built with cutting-edge technologies to deliver a seamless shopping experience. Shreads offers comprehensive e-commerce functionality with secure payments, intuitive user interfaces, and robust admin management.
+A full-stack online clothing shopping platform built with React.js, Node.js, Express.js, and MongoDB. Features secure authentication, comprehensive product management, and responsive design for an optimal shopping experience.
 
 Features:
 
 1. Customer Features
 
-- Secure Authentication - JWT-based login/register with bcrypt encryption
-- Product Discovery - Advanced filtering by category, size, price, brand
-- Reviews & Ratings - Customer feedback and product reviews system
-- Wishlist Management - Save favorite items for later
-- Shopping Cart - Add, remove, and manage cart items
-- Secure Checkout - Integrated payment gateway (Stripe/Razorpay)
-- Order Tracking - Complete order history and status updates
+- JWT Authentication - Secure login/register with bcrypt password encryption
+- Product Browsing - Advanced filtering and search functionality
+- Reviews & Ratings - Customer feedback and product rating system
+- Cart & Wishlist Management - Add, remove, and manage shopping items
+- Secure Checkout - Integrated payment gateway
+- Order History Tracking - Complete order management and status updates
 - Responsive Design - Optimized for all devices
 
 2. Admin Features
 
-- Dashboard Analytics - Sales, revenue, and customer insights
-- Inventory Management - Add, edit, and manage products
+- Admin Dashboard - Comprehensive management interface
+- Inventory Management - Product stock and availability control
 - Order Management - Process and track customer orders
-- User Management - Customer data and account management
 - Product Management - Full CRUD operations for products
-- Category Management - Organize products by categories
 
 Tech Stack:
 
 1. Frontend
 
-- React.js - Component-based UI framework
-- HTML5 & CSS3 - Modern styling and layout
-- JavaScript (ES6+) - Core programming language
-- Responsive Design - Mobile-first approach
+- React.js
+- HTML5, CSS3
+- JavaScript (ES6+)
 
 2. Backend
 
-- Node.js - Runtime environment
-- Express.js - Web application framework
-- MongoDB - NoSQL database for scalability
-- Mongoose - MongoDB object modeling
+- Node.js
+- Express.js
+- MongoDB
 
-3. Security & Payments
+3. Security & Features
 
-- JWT - JSON Web Tokens for authentication
-- bcrypt - Password hashing and encryption
-- Payment Gateway - Stripe/Razorpay integration
-- CORS - Security middleware
+- JWT Authentication
+- bcrypt Password Encryption
+- Payment Gateway Integration
 
 Usage:
+
 -> For Customers
 
-1. Browse Products - Explore clothing items with filters and search
-2. Create Account - Register for personalized experience
-3. Add to Cart/Wishlist - Save items for purchase later
-4. Secure Checkout - Complete purchases with integrated payments
-5. Track Orders - Monitor order status and history
-6. Leave Reviews - Share feedback on purchased items
+1. Browse products with filters and search
+2. Create account with secure authentication
+3. Add items to cart and wishlist
+4. Complete secure checkout with payment gateway
+5. Track order history and status
+6. Leave reviews and ratings for products
 
 -> For Administrators
 
-1. Access Admin Panel - Login with admin credentials
-2. Manage Inventory - Add, edit, or remove products
-3. Process Orders - Update order status and manage fulfillment
-4. View Analytics - Monitor sales performance and metrics
-5. Manage Users - Oversee customer accounts and data
+1. Access admin dashboard
+2. Manage product inventory
+3. Process and track customer orders
+4. Manage product listings and categories
